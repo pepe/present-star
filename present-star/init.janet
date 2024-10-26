@@ -1,4 +1,9 @@
-(use ./parser)
+(use ./parser spork)
+(temple/add-loader)
+(import /templates/app)
+
 (defn main
-  [& args]
-  (print (hello)))
+  [_ title & files]
+  (app/render :title title
+              :decks (seq [file :in files]
+                       (htmlgen/html (parse-deck (slurp file))))))
