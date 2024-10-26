@@ -1,8 +1,4 @@
-(defn hello
-  `Evaluates to "Hello!"`
-  []
-  "Hello!")
-
+(use ./parser)
 (defn main
   [& args]
   (print (hello)))

@@ -1,8 +1,36 @@
-(use spork/pgp)
+(use spork gp/data/schema)
 (defn words-id
   "Converts string to pgp word of its hash"
   [str]
-  (-> str hash math/abs (int->string 16) pgp/hexs->words (string/join "-")))
+  (-> str hash math/abs (misc/int->string 16) pgp/hexs->words (string/join "-")))
+
+(defn parse-deck
+  "Parses deck string"
+  [str]
+  (defn <header/>
+    [& fm-arr]
+    (def h (table ;(flatten fm-arr)))
+    [:header
+     [:h1 (h "title")]
+     [:nav]])
+
+  (defn </>
+    [el]
+    (fn [c] [el c]))
+
+  (def grammar
+    ~{:eol (+ "\n" "\r\n")
+      :2eol (* :eol :eol)
+      :div "---"
+      :kv (group (* '(to ":") ":" :s* '(to :eol)))
+      :frontmatter (cmt (some (* :kv :eol)) ,<header/>)
+      :slide-end (+ :div -1)
+      :h1 (cmt (* "#" :s* '(to -1)) ,(</> :h1))
+      :slide (cmt (* :h1 :slide-end) ,(</> :section))
+      :slides (some (* :slide :slide-end))
+      :main (* :frontmatter :div :eol :slides)})
+
+  [:main ;(peg/match grammar str)])
 
 (defn parse-string
   ```
