@@ -7,7 +7,7 @@
 (import ../present-star/parser :prefix "")
 (assert
   (=
-    [:main {:style "width: 500vw"}
+    [:main
      [:section
       [:h1 "Title"]]
      [:section
@@ -16,7 +16,7 @@
       [:h1 "Bullet Title"]
       [:ul
        [:li "Bullet 1"]
-       [:li [:a {:href "http://google.com"} "Bullet 2"]]]]
+       [:li [:a {:href "http://google.com" :target "_blank"} "Bullet 2"]]]]
      [:section
       [:img {:alt "Some image" :src "http://fotos.com/1"}]]
      [:section

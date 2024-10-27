@@ -17,7 +17,7 @@
      [:span (h "author")]])
   (defn <a/>
     [label href]
-    [:a {:href href} label])
+    [:a {:href href :target "_blank"} label])
   (defn <img/>
     [alt src]
     [:img {:src src :alt alt}])

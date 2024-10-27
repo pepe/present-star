@@ -17,8 +17,10 @@
     </span>
     <nav>
       <button id="previous-slide"><</button>
+      <span id="slide-count"></span>
       <button id="next-slide">></button>
       <button id="previous-deck"><<</button>
+      <span id="deck-count"></span>
       <button id="next-deck">>></button>
     </nav>
   </header>
