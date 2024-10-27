@@ -40,4 +40,4 @@
       :slides (some :slide)
       :main (* :frontmatter :div :eol :slides)})
   (def [f & s] (peg/match grammar str))
-  [:main {:style (string "width: " (length s) "00vw")} ;s f])
+  [:main ;s f])

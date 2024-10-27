@@ -22,9 +22,7 @@
       <button id="next-deck">>></button>
     </nav>
   </header>
-	{% (each deck (args :decks) %}
-  	{- deck -}
-	{% ) %}
+	{% (each deck (args :decks) (print deck)) %}
 	<script src="main.js"></script>
   </body>
 </html>
