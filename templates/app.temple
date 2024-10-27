@@ -15,10 +15,17 @@
     <span>
       {{ (args :title) }}
     </span>
+    <nav>
+      <button id="previous-slide"><</button>
+      <button id="next-slide">></button>
+      <button id="previous-deck"><<</button>
+      <button id="next-deck">>></button>
+    </nav>
   </header>
 	{% (each deck (args :decks) %}
   	{- deck -}
 	{% ) %}
+	<script src="main.js"></script>
   </body>
 </html>
 

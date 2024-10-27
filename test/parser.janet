@@ -7,7 +7,7 @@
 (import ../present-star/parser :prefix "")
 (assert
   (=
-    [:main
+    [:main {:style "width: 500vw"}
      [:section
       [:h1 "Title"]]
      [:section
