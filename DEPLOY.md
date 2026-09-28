@@ -110,8 +110,21 @@ over HTTPS.
 
 ## 6. Surviving a reboot
 
-[`deploy/crontab`](deploy/crontab) raises the demiurge and then its peers
-when the box boots. Add its two lines with `crontab -e` as deploy.
+[`deploy/thickets.start`](deploy/thickets.start) is the box's
+`/etc/local.d/thickets.start`, run by OpenRC's `local` service at boot. It
+raises every thicket on the box -- interstudy, metabolon, metabolon-staging
+and present-star -- each demiurge as deploy, with umask 077, its own
+environment and absolute paths, and then asks it to `run-peers`. A thicket
+whose demiurge already answers is left alone, and naming thickets raises
+only those:
+
+```
+ssh pe doas /etc/local.d/thickets.start present-star
+```
+
+What it did is in syslog: `doas grep ' thickets:' /var/log/messages`. A new
+thicket on the box is one more line in its list. busybox `crond` on the box
+knows no `@reboot`, which is why this is not a crontab.
 
 ## Day to day
 

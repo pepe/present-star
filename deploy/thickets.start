@@ -1,0 +1,87 @@
+#!/bin/sh
+# /etc/local.d/thickets.start -- raises the thickets of pan.earth after a boot.
+#
+# OpenRC's `local` service runs this as root once the box is up. Every
+# thicket is the deploy user's, and its demiurge is started the way a
+# demiurge started by hand must be: with umask 077, its own environment,
+# absolute paths, and real detachment. A demiurge raises nothing of its
+# own accord, so once it answers it is asked to `run-peers`.
+#
+# A thicket whose demiurge already answers is left alone, so running this
+# again does no harm: `thickets.start present-star` raises only that one.
+#
+# The work is done by a detached worker, so the boot never waits on it; it
+# says what it did to syslog (tag `thickets`) and to each thicket's log.
+
+# name|how its client is called, as deploy
+THICKETS='
+interstudy|/srv/exe/interstudy/dm
+metabolon|cd /srv/src/metabolon && CONF=conf.dmc.jdn ./dmc
+metabolon-staging|cd /srv/src/metabolon-staging && CONF=conf.dmc.jdn ./dmc
+present-star|/srv/exe/present-star/dm
+'
+
+say() {
+	logger -t thickets "$*"
+}
+
+as_deploy() {
+	# Every client call is bounded: a wedged demiurge accepts a call and
+	# never answers it.
+	timeout "$1" su -s /bin/sh deploy -c "umask 077; $2" </dev/null
+}
+
+raise() {
+	name=$1
+	client=$2
+	src=/srv/src/$name
+	log=/srv/data/$name/demiurge.log
+
+	if [ ! -x "$src/prod/bin/janet" ] || [ ! -f "$src/demiurge.janet" ]; then
+		say "$name: no demiurge or environment in $src, left down"
+		return
+	fi
+	if as_deploy 20 "$client state" >/dev/null 2>&1; then
+		say "$name: its demiurge already answers, left alone"
+		return
+	fi
+
+	say "$name: raising its demiurge"
+	su -s /bin/sh deploy -c "umask 077; cd $src && . ./prod/bin/activate &&
+		echo \"\$(date -u '+%F %T') - raised at boot by /etc/local.d/thickets.start\" >> $log &&
+		setsid $src/prod/bin/janet $src/demiurge.janet >> $log 2>&1 </dev/null &"
+
+	tries=0
+	until as_deploy 10 "$client state" >/dev/null 2>&1; do
+		tries=$((tries + 1))
+		if [ "$tries" -ge 30 ]; then
+			say "$name: its demiurge did not answer within a minute; peers not raised"
+			return
+		fi
+		sleep 2
+	done
+
+	if as_deploy 60 "$client run-peers" >/dev/null 2>&1; then
+		say "$name: peers raised"
+	else
+		say "$name: run-peers did not answer; see $log"
+	fi
+}
+
+work() {
+	echo "$THICKETS" | while IFS='|' read -r name client; do
+		[ -n "$name" ] || continue
+		if [ "$#" -gt 0 ]; then
+			case " $* " in *" $name "*) ;; *) continue ;; esac
+		fi
+		raise "$name" "$client"
+	done
+	say "done"
+}
+
+if [ "$1" = "--worker" ]; then
+	shift
+	work "$@"
+else
+	setsid "$0" --worker "$@" >/dev/null 2>&1 </dev/null &
+fi

@@ -1,8 +1,0 @@
-# The deploy user's crontab on pan.earth: raise present-star when the box
-# boots. Install with `crontab -e` as deploy, beside whatever is there.
-#
-# The demiurge starts with the umask, the environment and absolute paths,
-# as a demiurge started by hand must. It raises no peers of its own accord,
-# so `dm run-peers` asks it to once it is listening.
-@reboot umask 077; cd /srv/src/present-star && . ./prod/bin/activate && exec /srv/src/present-star/prod/bin/janet /srv/src/present-star/demiurge.janet >> /srv/data/present-star/demiurge.log 2>&1
-@reboot sleep 15; /srv/exe/present-star/dm run-peers >> /srv/data/present-star/demiurge.log 2>&1
