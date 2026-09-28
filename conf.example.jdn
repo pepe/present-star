@@ -9,12 +9,19 @@
 # anywhere near a server.
 {:name "present-star"
  :deploy
- {:host "deploy@show.pan.earth"
+ {# `pe` from ~/.ssh/config: pan.earth on port 2323. Everything on the
+  # box is the deploy user's, so the thicket is bootstrapped as deploy.
+  :host "deploy@pe"
   :build-path "/srv/src/present-star"
   :release-path "/srv/exe/present-star"
   :data-path "/srv/data/present-star"
   :repo "https://github.com/pepe/present-star"
-  :env "prod"}
+  :env "prod"
+  # The Janet the peers are built with, as interstudy has it on this box:
+  # the box's own is older than gp and twm need.
+  :janet-source
+  {:repo "https://github.com/pepe/janet.git"
+   :rev "b86ad57a6f4e7ccef0439b18a373d7720310083c"}}
  :runtime
  {:debug false
   :log true}
@@ -28,11 +35,11 @@
    # it stands down and the sentry takes the door back.
    :timeout 1800}
   :tree {:image "tree" :seed "seed.jdn" :entry "tree.janet"}
-  # The decks. A checkout of a course repository works well: `git pull`
-  # there, and the decker builds whatever changed.
+  # The decks travel with the code: `dm pull` brings new ones, and the
+  # decker builds whatever changed. A deck needs no release.
   :decker
   {:entry "decker.janet"
-   :sources "/srv/data/present-star/decks"
+   :sources "/srv/src/present-star/presentations"
    :ignore ["README.md"]}
   :presenter {:guarded-by :presenter/sentry :entry "presenter.janet"}
   :presenter/sentry
@@ -45,28 +52,28 @@
  {:psk "\x1C\xBB:M\xE9\t\x87\xE8\x91\xF2\xF8\x8B\0\xC2z\x99t3\x98\xFC\xAD\xAE\x9B4(D=\xA2Y\x17yZ"
   :nodes
   {:demiurge
-   {:rpc "localhost:4543"
+   {:rpc "localhost:4843"
     # The sentry is a peer of the demiurge like any other: it has to dial
     # it to hand the door back when the presenter stands down.
     :peers [:tree :decker :presenter :presenter/sentry :watcher]}
    :tree
-   {:rpc "localhost:4544"
+   {:rpc "localhost:4844"
     :peers [:presenter :presenter/sentry :watcher]}
    :decker
-   {:rpc "localhost:4545"
+   {:rpc "localhost:4845"
     :peers [:tree]}
    :presenter
-   {:rpc "localhost:4546"
+   {:rpc "localhost:4846"
     :peers [:tree]}
    :presenter/sentry
-   {:rpc "localhost:4547"
+   {:rpc "localhost:4847"
     :peers [:tree]}
    :watcher
-   {:rpc "localhost:4548"
+   {:rpc "localhost:4848"
     :peers [:tree]}}}
  :membrane
  {:nodes
-  {:demiurge {:rpc "localhost:4543"}
+  {:demiurge {:rpc "localhost:4843"}
    # The lecturer's door, behind nginx on a name of its own. The sentry
    # holds it until the password is given, then hands it to the presenter.
    :presenter

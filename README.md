@@ -117,39 +117,12 @@ cannot run on its own. The test password is `testist`. After changing
 
 The lecturer's door is `decks.pan.earth`, the students' `show.pan.earth`.
 Their configuration is `conf.show.pan.earth.jdn`, gitignored, with the real
-secrets. Bootstrap the box with
+secrets. The decks travel with the code: on the box the decker reads
+`presentations/` of the checkout, so a pushed deck is published by `dm pull`.
 
-```
-CONF=conf.show.pan.earth.jdn janet demiurge.janet bootstrap
-```
-
-and raise the peers with `dm run-peers` there. nginx sends each name to its
-door, and must not buffer the event streams:
-
-```
-server {
-  server_name decks.pan.earth;
-  location / {
-    proxy_pass http://localhost:7880;
-    proxy_http_version 1.1;
-    proxy_buffering off;
-    proxy_read_timeout 1h;
-  }
-}
-server {
-  server_name show.pan.earth;
-  location / {
-    proxy_pass http://localhost:7881;
-    proxy_http_version 1.1;
-    proxy_buffering off;
-    proxy_read_timeout 1h;
-  }
-}
-```
-
-The decks on the box live in `/srv/data/present-star/decks`. A checkout of
-the course repository works well there: `git pull`, and the decker builds
-whatever changed.
+[DEPLOY.md](DEPLOY.md) takes the box from nothing to a lecture: the
+bootstrap, the release, nginx ([deploy/nginx](deploy/nginx)), certbot, and
+what to do day to day.
 
 ## On Windows
 
