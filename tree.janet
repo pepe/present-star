@@ -110,6 +110,17 @@
   [_ {:store store}]
   (unless (:load store :notes) (:save store @{} :notes)))
 
+(define-update KeepPresenting
+  ```
+  Keeps a stage stored before decks were staged as it was: presented.
+  Such a stage does not say `:presenting`, and whatever stood on it was on
+  the wall -- a release in the middle of a lecture must leave it there.
+  ```
+  [_ {:store store}]
+  (when-let [stage (:load store :stage)]
+    (if (nil? (get stage :presenting))
+      (:save store (merge stage {:presenting true}) :stage))))
+
 (defn- notes/held
   "The notes on the deck `id`, made empty in the `store` when it has none."
   [store id]
@@ -420,4 +431,5 @@
   ((>update :rpc (update-rpc rpc-funcs))
     compile-config))
 
-(twm-tree/main initial-state PrepareStore SeedStore EnsureNotes PrepareView)
+(twm-tree/main initial-state
+               PrepareStore SeedStore EnsureNotes KeepPresenting PrepareView)
