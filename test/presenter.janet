@@ -15,18 +15,19 @@
 (assert (deep= [:goto "intro" 2] (presenter/move/of {:move "goto" :deck "intro" :slide 2}))
         "Go to names its deck and slide")
 (assert (nil? (presenter/move/of {:move "jump"})) "Anything else is no move")
-(assert (deep= @["b" "a" "c"]
-               (presenter/deck/order @{"a" {:date "2026-03-02"}
-                                       "b" {:date "2026-02-23"}
-                                       "c" {:date "2026-03-02"}}))
-        "Decks run in the order of their dates, then of their names")
+(assert (deep= @["b" "a" "c" "d"]
+               (presenter/deck/order @{"a" {:modified 100 :date "2026-02-23"}
+                                       "b" {:modified 300 :date "2024-01-01"}
+                                       "c" {:modified 100}
+                                       "d" {:date "2026-09-28"}}))
+        "Decks run from the one saved last, then by name, unsaved ones last")
 (end-suite)
 
 (setdyn :ctx ctx)
 (def tree (client ;(server/host-port (tree-conf :rpc)) :test (tree-conf :psk)))
 (:session/new tree "abcd" :presenter/sentry)
 (:save-presentation tree "intro"
-                    @{:title "The Intro" :date "2026-02-23"
+                    @{:title "The Intro" :date "2026-02-23" :modified 2000000000
                       :slides @[[:section [:h1 "One"]]
                                 [:section [:h2 "Two"]]]})
 (:build-failed tree "draft" {:file "draft.md" :line 3
@@ -92,14 +93,14 @@
 
 (let [m (sse/mark live)]
   (:save-presentation tree "CULS-Backend"
-                      @{:title "CULS Backend" :date "2024-02-26"
+                      @{:title "CULS Backend" :date "2024-02-26" :modified 1000000000
                         :sections @[@{:title "The Intro" :first 0 :count 2 :date "2024-02-26"}
                                     @{:title "Tools" :first 2 :count 1 :date "2024-02-27"}]
                         :slides @[[:section [:h1 "Hi"]] [:section [:h2 "Who"]]
                                   [:section [:h2 "Tools"]]]})
-  (assert (sse/until live m [`CULS Backend` `3 slides in 2 sections`
+  (assert (sse/until live m [`intro.md` `CULS Backend` `3 slides in 2 sections`
                              `go(&quot;goto&quot;,&quot;CULS-Backend&quot;,2)` `Tools`])
-          "A deck in sections offers each of them to start from"))
+          "A deck in sections offers each of them to start from, after the deck saved later"))
 (let [m (sse/mark live)]
   (go `{"move":"goto","deck":"CULS-Backend","slide":2}`)
   (assert (sse/until live m [`<h2>Tools</h2>` `3 / 3` `Tools` `1 of 1`

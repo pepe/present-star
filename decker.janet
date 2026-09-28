@@ -39,11 +39,14 @@
   Builds the deck in `file` from its `source`, answering what the tree is
   to be told: `[:save id deck]`, or `[:failed id error]` with the line the
   parser stopped at.
+
+  A deck is stamped `:modified` with the time its file was saved, when it
+  is known, so the decks being worked on can come first.
   ```
-  [file source]
+  [file source &opt modified]
   (def id (deck/id-of file))
   (match (protect (parser/parse-deck source (deck/title-of file)))
-    [true deck] [:save id deck]
+    [true deck] [:save id (if modified (put deck :modified modified) deck)]
     [false (err (dictionary? err))] [:failed id (merge {:file file} err)]
     [false err] [:failed id {:file file :message (string err)}]))
 
@@ -57,7 +60,8 @@
 (defn sources/scan
   ```
   Reads every deck in `dir`, answering the files whose source changed since
-  it was last built, with that source, and the files that are gone.
+  it was last built, with that source and the time the file was saved, and
+  the files that are gone.
 
   Every file is read on every scan. The decks are a few kilobytes each and
   reading them all is cheaper than being wrong about them: a modification
@@ -78,7 +82,7 @@
                  _ ok]
         (put present file true)
         (unless (= source (built file))
-          (array/push changed [file source])))))
+          (array/push changed [file source (os/stat file-path :modified)])))))
   [changed (seq [file :keys built :unless (present file)] file)])
 
 (defn ^sources/follow
@@ -106,8 +110,8 @@
             (protect (tell tree [:remove id]))))
         (forever
           (def [changed gone] (sources/scan dir ignore))
-          (each [file source] changed
-            (def result (build file source))
+          (each [file source modified] changed
+            (def result (build file source modified))
             (match (protect (tell tree result))
               [true _] (do
                          (put built file source)

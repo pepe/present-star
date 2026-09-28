@@ -20,6 +20,8 @@
   (assert (= [:save "My-Deck"] [what id]) "A good deck is saved")
   (assert (= "My Deck" (deck :title)) "titled after its file")
   (assert (= "First part" (get-in deck [:sections 0 :title])) "with its sections as written"))
+(let [[_ _ deck] (decker/build "a.md" "title: A\n---\n# One" 1790000000)]
+  (assert (= 1790000000 (deck :modified)) "and stamped with when its file was saved"))
 (let [[what id err] (decker/build "b.md" "title: B\nbroken\n---")]
   (assert (= [:failed "b"] [what id]) "A broken deck fails")
   (assert (= "b.md" (err :file)) "naming its file")
@@ -54,6 +56,8 @@
 (start-suite :follow)
 (assert (eventually |(deck "intro")) "A deck in the sources reaches the tree")
 (assert (= 2 (length ((deck "intro") :slides))) "with all its slides")
+(assert (= (os/stat (path/join dir "intro.md") :modified) ((deck "intro") :modified))
+        "stamped with when its file was saved")
 (assert (eventually |(nil? (deck "stale"))) "A deck whose file is gone is forgotten")
 (assert (nil? (deck "README")) "The README is left alone")
 

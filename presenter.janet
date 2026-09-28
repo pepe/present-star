@@ -22,11 +22,13 @@
 
 (defn deck/order
   ```
-  The ids of `decks` in the order a course runs: by the date each deck
-  names, then by file name. A deck with no date comes first.
+  The ids of `decks`, the one saved last first: the deck being worked on is
+  the one about to be presented. Decks saved at the same moment -- a fresh
+  checkout saves them all at once -- follow the order of their names, and a
+  deck with no time of saving comes last.
   ```
   [decks]
-  (sorted-by |[(get-in decks [$ :date] "") $] (keys decks)))
+  (sorted-by |[(- (get-in decks [$ :modified] 0)) $] (keys decks)))
 
 (defn- <go/>
   "A button carrying one intent to the stage."
