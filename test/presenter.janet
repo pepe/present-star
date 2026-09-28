@@ -10,8 +10,16 @@
 
 (start-suite :intents)
 (assert (deep= [:next] (presenter/move/of {:move "next"})) "Next")
-(assert (deep= [:start "intro"] (presenter/move/of {:move "start" :deck "intro"}))
-        "Start names its deck")
+(assert (deep= [:stage "intro"] (presenter/move/of {:move "stage" :deck "intro"}))
+        "Staging names its deck")
+(assert (deep= [:present] (presenter/move/of {:move "present"})) "Present")
+(assert (deep= [:close] (presenter/move/of {:move "close"})) "Close")
+(assert (deep= [:write "intro" 1 "hi"] (presenter/note/of {:deck "intro" :slide 1 :text "hi"}))
+        "A note is written on its slide")
+(assert (deep= [:attach "intro" "o1" 0] (presenter/note/of {:deck "intro" :orphan "o1" :slide 0}))
+        "An orphan is put on a slide")
+(assert (deep= [:drop "intro" "o1"] (presenter/note/of {:deck "intro" :orphan "o1"}))
+        "or forgotten")
 (assert (deep= [:goto "intro" 2] (presenter/move/of {:move "goto" :deck "intro" :slide 2}))
         "Go to names its deck and slide")
 (assert (nil? (presenter/move/of {:move "jump"})) "Anything else is no move")
@@ -59,30 +67,71 @@
 (let [resp (request "GET" (url "/") :headers cookie)]
   (assert ((success-has? `Presenter` `Log out` `Nothing is on the stage` `The Intro`
                          `intro.md · 2 slides · 2026-02-23`
-                         `draft.md:3` `function go(`)
+                         `draft.md:3` `function go(` `function note(`)
             resp)
           "The lecturer sees the decks, and the one that did not build"))
+
+(defn note [body]
+  (request "POST" (url "/note")
+           :headers (merge {"Content-Type" "application/json"} cookie)
+           :body body))
 
 (def live (sse/open http "/content" "abcd"))
 (assert (sse/until live 0 [`id="podium"` `Nothing is on the stage`])
         "The podium's stream starts with what is on now")
 (let [m (sse/mark live)]
-  (assert (= 204 ((go `{"move":"start","deck":"intro"}`) :status)) "Starting is accepted")
-  (assert (sse/until live m [`<h1>One</h1>` `1 / 2` `Next` `<h2>Two</h2>`
-                             `Students follow at` `http://localhost:8881`])
-          "and the podium shows the slide, the next one, and where students follow"))
-(assert (deep= {:presentation "intro" :slide 0} (:stage tree)) "The tree decided it")
+  (assert (= 204 ((go `{"move":"stage","deck":"intro"}`) :status)) "Staging is accepted")
+  (def sent (sse/until live m [`<h1>One</h1>` `Staged` `1 / 2` `Present` `Close`
+                               `Notes` `data-ignore-morph` `Next` `<h2>Two</h2>`
+                               `Students follow at` `http://localhost:8881`
+                               `On the stage` `The Intro`]))
+  (assert sent "and the podium shows the slide, its note, the next one, and where students follow")
+  (assert-not (string/find "draft.md" sent) "The other decks are put away meanwhile"))
+(assert (deep= {:presentation "intro" :slide 0 :presenting false} (:stage tree))
+        "The tree decided it, and shows the students nothing yet")
+
+(let [m (sse/mark live)]
+  (assert (= 204 ((note `{"deck":"intro","slide":0,"text":"Say hello first"}`) :status))
+          "A note is accepted")
+  (assert (sse/until live m [`data-ignore-morph` `Say hello first</textarea>` `1 note`])
+          "and comes back on its slide, and counted with its deck"))
+(assert (= "Say hello first" (get-in (:notes tree) ["intro" :slides 0])) "The tree keeps it")
+(assert (= 400 ((note `{"deck":"intro"}`) :status)) "A change that says nothing is refused")
+
 (let [m (sse/mark live)]
   (go `{"move":"next"}`)
-  (assert (sse/until live m [`2 / 2` `This is the last slide.`]) "Next moves on"))
+  (assert (sse/until live m [`2 / 2` `This is the last slide.`])
+          "Next pages through the staged deck"))
+(let [m (sse/mark live)]
+  (go `{"move":"present"}`)
+  (assert (sse/until live m [`<h2>Two</h2>` `Presenting` `2 / 2` `Stop`])
+          "Presenting starts from the slide the lecturer is on"))
+(assert ((:stage tree) :presenting) "and the tree says it is presented")
 (assert (= 401 ((go `{"move":"previous"}` {}) :status)) "A move without the session is refused")
 (assert (= 400 ((go `{"move":"jump"}`) :status)) "An unknown move is refused")
 (ev/sleep 0.2)
 (assert (= 1 ((:stage tree) :slide)) "and neither moved the stage")
 
 (let [m (sse/mark live)]
+  (note `{"deck":"intro","slide":1,"text":"Two goes soon"}`)
+  (assert (sse/until live m [`Two goes soon</textarea>`]) "A note is written while presenting")
+  (def m (sse/mark live))
+  (:save-presentation tree "intro"
+                      @{:title "The Intro" :date "2026-02-23" :modified 2000000000
+                        :slides @[[:section [:h1 "One"]]]})
+  (assert (sse/until live m [`1 / 1` `Say hello first</textarea>` `Notes whose slide is gone`
+                             `Was on slide 2` `Two goes soon` `Put on this slide`])
+          "A note whose slide was taken out is kept aside, to be put somewhere"))
+(let [orphan (get-in (:notes tree) ["intro" :orphans 0 :id])
+      m (sse/mark live)]
+  (note (string `{"deck":"intro","orphan":"` orphan `","slide":0}`))
+  (assert (sse/until live m [`Say hello first` `Two goes soon</textarea>`])
+          "and put on the slide on the stage, after its own note")
+  (assert (empty? (get-in (:notes tree) ["intro" :orphans])) "It is an orphan no more"))
+
+(let [m (sse/mark live)]
   (:build-failed tree "intro" {:file "intro.md" :line 7 :message "This code block is never closed."})
-  (assert (sse/until live m [`2 / 2` `intro.md:7` `never closed`])
+  (assert (sse/until live m [`1 / 1` `intro.md:7` `never closed`])
           "A broken save of the staged deck is said, and the slide stays"))
 
 (let [p (client ;(server/host-port rpc) :test psk)
@@ -90,6 +139,11 @@
   (assert (= :last-active what) "The presenter reports its last use")
   (assert (>= at (- (os/time) 1)) "and while a deck is on the stage, that is now")
   (:close p))
+
+(let [m (sse/mark live)]
+  (go `{"move":"close"}`)
+  (assert (sse/until live m [`Nothing is on the stage` `Decks` `intro.md` `draft.md:3`])
+          "Closing clears the stage, and brings the other decks back"))
 
 (let [m (sse/mark live)]
   (:save-presentation tree "CULS-Backend"
@@ -103,13 +157,14 @@
           "A deck in sections offers each of them to start from, after the deck saved later"))
 (let [m (sse/mark live)]
   (go `{"move":"goto","deck":"CULS-Backend","slide":2}`)
-  (assert (sse/until live m [`<h2>Tools</h2>` `3 / 3` `Tools` `1 of 1`
-                             `CULS Backend · Tools · 2024-02-27`])
-          "and starting from one says which section is on"))
+  (def sent (sse/until live m [`<h2>Tools</h2>` `Staged` `3 / 3` `Tools` `1 of 1`
+                               `CULS Backend · Tools · 2024-02-27`]))
+  (assert sent "and staging one of them says which section is on")
+  (assert-not (string/find "intro.md" sent) "with the other decks put away"))
 
 (let [m (sse/mark live)]
-  (go `{"move":"stop"}`)
-  (assert (sse/until live m [`Nothing is on the stage`]) "Stopping clears the podium"))
+  (go `{"move":"close"}`)
+  (assert (sse/until live m [`Nothing is on the stage`]) "Closing clears the podium"))
 (sse/close live)
 (end-suite)
 (os/exit 0)

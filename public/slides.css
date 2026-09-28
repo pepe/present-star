@@ -247,6 +247,59 @@ button.primary {
   color: var(--accent);
 }
 
+/* Staged or presenting: what the students see now. */
+.state {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+.state.presenting {
+  color: var(--accent);
+  font-weight: 700;
+}
+.state.presenting::before {
+  content: "● ";
+}
+
+/* The lecturer's note, read and written in one place. */
+textarea.note {
+  width: 100%;
+  min-height: 7rem;
+  resize: vertical;
+  padding: 0.5rem 0.6rem;
+  border: 1px solid var(--line);
+  border-radius: 0.4rem;
+  background: var(--panel);
+  color: var(--fg);
+  font: inherit;
+  font-size: 1.05rem;
+  line-height: 1.4;
+}
+textarea.note:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: -1px;
+}
+
+.orphans {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.orphan {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 0.6rem;
+  border: 1px dashed var(--line);
+  border-radius: 0.4rem;
+}
+.orphan p {
+  margin: 0;
+}
+.note-text {
+  white-space: pre-wrap;
+}
+
 .idle {
   padding: 2rem;
   border: 1px dashed var(--line);
@@ -353,6 +406,12 @@ body.watching main {
 }
 
 .waiting {
+  text-align: center;
+}
+
+/* A deck staged but not presented: its title, and nothing more. */
+.slide > section.title-card {
+  align-items: center;
   text-align: center;
 }
 .waiting h1 {

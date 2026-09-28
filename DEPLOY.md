@@ -80,12 +80,13 @@ and open for a whole lecture.
 
 The lecturer's door is also limited. The sentry takes a POST to any path it
 does not route as a sign-in, so nginx refuses every POST but `/`, where the
-password is given, and `/go`, the lecturer's moves, with 405. Per client, `/`
-takes 6 sign-ins at once and then one every ten seconds, and `/go` takes 20
-moves at once and then two a second -- a clicker's pace, and the most anybody
-can guess at `/go` while the sentry holds the door. Past either, nginx
-answers 429 and says so in its error log. certbot leaves all of it alone,
-but on the box the file is certbot's, so change it there by hand.
+password is given, `/go`, the lecturer's moves, and `/note`, the lecturer's
+notes, with 405. Per client, `/` takes 6 sign-ins at once and then one every
+ten seconds, and `/go` and `/note` together take 20 at once and then two a
+second -- a clicker's pace, and the most anybody can guess at either while
+the sentry holds the door. Past any of them, nginx answers 429 and says so
+in its error log. certbot leaves all of it alone, but on the box the file
+is certbot's, so change it there by hand.
 
 ```
 scp deploy/nginx/decks.pan.earth.conf deploy/nginx/show.pan.earth.conf pe:/tmp/
@@ -151,5 +152,8 @@ knows no `@reboot`, which is why this is not a crontab.
   an old demiurge, so stop first.
 - **The log** is `/srv/data/present-star/demiurge.log`.
 - **Sessions** live in the tree's memory: restarting the tree signs the
-  lecturer out. The decks and where the stage stands are in its store and
-  survive.
+  lecturer out. The decks, where the stage stands and the notes are in its
+  store and survive.
+- **Notes** are nowhere but in the tree's store,
+  `/srv/data/present-star/tree.jimage` -- not in git. Copy it off the box
+  to keep them: `scp deploy@pe:/srv/data/present-star/tree.jimage .`

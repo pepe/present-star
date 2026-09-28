@@ -51,15 +51,38 @@
        (or (nil? (get err :line)) (number? (err :line)))))
 
 (defn move?
-  "Whether `move` is one the stage knows: next, previous, stop, start, goto."
+  ```
+  Whether `move` is one the stage knows: stage, goto, next, previous,
+  present, stop, close.
+  ```
   [move]
   (and (indexed? move)
        (match [(length move) ;move]
          [1 :next] true
          [1 :previous] true
+         [1 :present] true
          [1 :stop] true
-         [2 :start id] (deck/id? id)
-         [3 :goto id n] (and (deck/id? id) (int? n) (>= n 0))
+         [1 :close] true
+         [2 :stage id] (deck/id? id)
+         [3 :goto id n] (and (deck/id? id) (nat? n))
+         false)))
+
+(defn note/text?
+  ```
+  Whether `text` can be a note. Notes are what a lecturer glances at, and
+  a book is refused.
+  ```
+  [text]
+  (and (string? text) (<= (length text) 16384)))
+
+(defn note/change?
+  "Whether `change` is one the notes know: write, attach, drop."
+  [change]
+  (and (indexed? change)
+       (match [(length change) ;change]
+         [4 :write id n text] (and (deck/id? id) (nat? n) (note/text? text))
+         [4 :attach id orphan n] (and (deck/id? id) (present-string? orphan) (nat? n))
+         [3 :drop id orphan] (and (deck/id? id) (present-string? orphan))
          false)))
 
 (def- twm/keys

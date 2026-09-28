@@ -14,15 +14,21 @@
   [:live])
 
 (defn <live/>
-  "The live slide as the audience sees it, or word that nothing is on yet."
+  ```
+  The live slide as the audience sees it, the title of a deck staged but
+  not presented yet, or word that nothing is on.
+  ```
   []
   (define :view)
   (if-let [live (view :live)]
-    [:div {:id "live"}
-     (<slide/> (live :content))
-     [:div {:class "live-line"}
-      (<deck/line/> live)
-      [:span (inc (live :slide)) " / " (live :count)]]]
+    (if (live :content)
+      [:div {:id "live"}
+       (<slide/> (live :content))
+       [:div {:class "live-line"}
+        (<deck/line/> live)
+        [:span (inc (live :slide)) " / " (live :count)]]]
+      [:div {:id "live" :class "announced"}
+       (<slide/> [:section {:class "title-card"} [:h1 (live :title)]])])
     [:div {:id "live" :class "waiting"}
      [:h1 "Waiting for the lecture"]
      [:p {:class "muted"}

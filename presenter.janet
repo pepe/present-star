@@ -7,7 +7,7 @@
 
 (def followed
   "What the presenter follows of the tree."
-  [:presentations :errors :stage :cap/session])
+  [:presentations :errors :stage :notes :cap/session])
 
 (def stage/stand-down
   ```
@@ -41,23 +41,76 @@
   [:p {:class "error"}
    [:strong file (if line (. ":" line))] " " message])
 
+(defn- <note/>
+  ```
+  The lecturer's note on slide `n` of the deck `id`, written where it is
+  read, and saved when the lecturer leaves it.
+
+  Datastar sets a textarea to what every push says, which would take back
+  whatever was typed since the last save. So the note is never morphed,
+  and is named after its deck, slide and text instead: a push that changes
+  any of them brings a new one in its place.
+  ```
+  [id n text]
+  [:textarea {:id (string "note-" (hash (string/join [id (string n) (or text "")] "\n")))
+              :class "note"
+              :data-ignore-morph true
+              :rows 5
+              :maxlength 4000
+              :placeholder "Notes on this slide, for you alone"
+              :onchange (string "note(" (json/encode {:deck id :slide n}) ", this.value)")}
+   (or text "")])
+
+(defn- <orphans/>
+  "The notes whose slide left the deck `id`, to put on slide `n`, or to forget."
+  [id n orphans]
+  (unless (empty? orphans)
+    [:section {:class "orphans"}
+     [:h3 "Notes whose slide is gone"]
+     (seq [{:id oid :text text :anchor anchor :was was} :in orphans]
+       [:div {:class "orphan"}
+        (<slide/> anchor "preview")
+        [:p {:class "muted"} "Was on slide " (inc was)]
+        [:p {:class "note-text"} text]
+        [:div {:class "controls"}
+         [:button {:onclick (string "note(" (json/encode {:deck id :orphan oid :slide n}) ")")}
+          "Put on this slide"]
+         [:button {:onclick (string "note(" (json/encode {:deck id :orphan oid}) ")")}
+          "Forget"]]])]))
+
 (defn <on-stage/>
-  "The staged slide, what comes after it, and the controls."
-  [id deck n err watcher]
+  ```
+  The staged slide, what comes after it, its note, and the controls. The
+  students see the slide only once it is presented; until then, only the
+  deck's title.
+  ```
+  [id deck stage err watcher held]
+  (def n (stage :slide))
+  (def shown (stage :presenting))
   (def total (length (deck :slides)))
   (def part (or (section/at deck n) {}))
   (def parted (> (length (get deck :sections [])) 1))
   [:div {:class "on-stage"}
    (<slide/> (slide/at deck n))
    [:aside {:class "side"}
+    (if shown
+      [:p {:class "state presenting"} "Presenting · the students follow"]
+      [:p {:class "state"} "Staged · the students see only the title"])
     [:p {:class "position"} (inc n) " / " total]
     (if (and parted (part :title))
       [:p {:class "part"} [:strong (part :title)] " · "
        (inc (- n (part :first))) " of " (part :count)])
     [:div {:class "controls"}
      (<go/> "← Previous" "previous")
-     [:button {:class "primary" :onclick "go(\"next\")"} "Next →"]
-     (<go/> "Stop" "stop")]
+     (if shown
+       [:button {:class "primary" :onclick "go(\"next\")"} "Next →"]
+       (<go/> "Next →" "next"))
+     (if shown
+       (<go/> "Stop" "stop")
+       [:button {:class "primary" :onclick "go(\"present\")"} "Present"])
+     (unless shown (<go/> "Close" "close"))]
+    [:h3 "Notes"]
+    (<note/> id n (get-in held [:slides n]))
     [:h3 "Next"]
     (if-let [upcoming (slide/at deck (inc n))]
       (<slide/> upcoming "preview")
@@ -69,27 +122,35 @@
     (if err (<failure/> err))
     (if watcher
       [:p {:class "follow"} "Students follow at "
-       [:a {:href watcher :target "_blank" :rel "noopener"} watcher]])]])
+       [:a {:href watcher :target "_blank" :rel "noopener"} watcher]])
+    (<orphans/> id n (get held :orphans []))]])
 
 (defn <decks/>
-  "Every deck the tree holds, with how its last build went."
-  [decks errors stage]
+  ```
+  Every deck the tree holds, with how its last build went. While one is
+  on the stage it is the only one, and the others come back once it is
+  closed.
+  ```
+  [decks errors stage notes]
   (def staged (get stage :presentation))
-  (def unbuilt (seq [id :keys errors :unless (decks id)] id))
+  (def unbuilt (if staged [] (seq [id :keys errors :unless (decks id)] id)))
   [:section {:class "decks"}
-   [:h2 "Decks"]
+   [:h2 (if staged "On the stage" "Decks")]
    (if (and (empty? decks) (empty? unbuilt))
      [:p {:class "muted"} "No decks yet. Save a Markdown deck into the sources."])
    [:ul
-    (seq [id :in (deck/order decks)
+    (seq [id :in (if staged [staged] (deck/order decks))
           :let [deck (decks id)
-                parts (get deck :sections [])]]
+                parts (get deck :sections [])
+                noted (length (get-in notes [id :slides] {}))]
+          :when deck]
       [:li (if (= id staged) {:class "staged"} {})
-       (<go/> "Present" "start" id)
+       (unless (= id staged) (<go/> "Stage" "stage" id))
        [:strong (deck :title)]
        [:span {:class "muted"} id ".md · " (length (deck :slides)) " slides"
         (if (> (length parts) 1) (. " in " (length parts) " sections"))
-        (if (deck :date) (. " · " (deck :date)))]
+        (if (deck :date) (. " · " (deck :date)))
+        (case noted 0 "" 1 " · 1 note" (. " · " noted " notes"))]
        (if-let [err (errors id)] (<failure/> err))
        # A deck in parts can be taken up at any of them: a course deck is
        # presented a section a lecture.
@@ -108,25 +169,28 @@
   (define :view)
   (def decks (or (view :presentations) {}))
   (def errors (or (view :errors) {}))
+  (def notes (or (view :notes) {}))
   (def stage (view :stage))
   (def id (get stage :presentation))
   (def deck (get decks id))
   [:div {:id "podium"}
    (if deck
-     (<on-stage/> id deck (stage :slide) (errors id) (view :watcher))
+     (<on-stage/> id deck stage (errors id) (view :watcher) (get notes id))
      [:section {:class "idle"}
       [:h2 "Nothing is on the stage"]
-      [:p {:class "muted"} "Present one of the decks below."]])
-   (<decks/> decks errors stage)])
+      [:p {:class "muted"}
+       "Stage one of the decks below. The students see only its title "
+       "until you present it."]])
+   (<decks/> decks errors stage notes)])
 
 (def- <keys/>
   ```
-  The one place the page asks anything of the stage.
+  The one place the page asks anything of the stage, and of the notes.
 
-  Keys, clickers and buttons all gather intent; `go` alone carries it, and
-  it carries only intent. The page does not move itself: it shows the
-  slide the tree says is on the stage, pushed back over `/content`, so the
-  lecturer sees exactly what the students see.
+  Keys, clickers and buttons all gather intent; `go` and `note` alone carry
+  it, and they carry only intent. The page does not move itself: it shows
+  the slide the tree says is on the stage, and the notes the tree keeps,
+  pushed back over `/content`, so the lecturer sees exactly what is so.
   ```
   [:script
    (hg/raw
@@ -134,6 +198,12 @@
         fetch("/go", {method: "POST",
                       headers: {"Content-Type": "application/json"},
                       body: JSON.stringify({move: move, deck: deck, slide: slide})});
+      }
+      function note(intent, text) {
+        if (text !== undefined) intent.text = text;
+        fetch("/note", {method: "POST",
+                        headers: {"Content-Type": "application/json"},
+                        body: JSON.stringify(intent)});
       }
       document.addEventListener("keydown", function (e) {
         if (e.target.closest("input, textarea, select") || e.altKey || e.ctrlKey || e.metaKey) return;
@@ -201,8 +271,10 @@
   (case m
     "next" [:next]
     "previous" [:previous]
+    "present" [:present]
     "stop" [:stop]
-    "start" [:start deck]
+    "close" [:close]
+    "stage" [:stage deck]
     "goto" [:goto deck slide]))
 
 (defn ^stage/move
@@ -229,6 +301,38 @@
   (def move (move/of (or body {})))
   (if (move? move)
     (do (produce (^stage/move move))
+      (http/no-content))
+    (http/bad-request)))
+
+(defn note/of
+  "The change the lecturer's `intent`, as `/note` receives it, asks of the notes, or nil."
+  [{:deck deck :slide slide :text text :orphan orphan}]
+  (cond
+    text [:write deck slide text]
+    (and orphan slide) [:attach deck orphan slide]
+    orphan [:drop deck orphan]))
+
+(defn ^notes/change
+  ```
+  Carries the lecturer's change of the notes to the tree, which keeps them.
+  The page shows the note the tree pushes back, as it shows the stage.
+  ```
+  [change]
+  (make-effect
+    (fn [_ {:tree tree :name name} _]
+      (match (protect (:notes/change tree ;change))
+        [true {:status :refused :reason reason}]
+        (eprint name " note change " (change 0) " refused: " reason)
+        [false err]
+        (eprint name " could not change the notes: " err)))
+    "change notes"))
+
+(defh /note
+  "Accepts one change of the notes, and hands it to the tree."
+  [session/checker http/keywordize-body http/json->body]
+  (def change (note/of (or body {})))
+  (if (note/change? change)
+    (do (produce (^notes/change change))
       (http/no-content))
     (http/bad-request)))
 
@@ -290,6 +394,7 @@
   @{"/" /index
     "/content" /content
     "/go" (http/dispatch {"POST" /go})
+    "/note" (http/dispatch {"POST" /note})
     "/logout" /logout})
 
 (def rpc-funcs
@@ -306,5 +411,5 @@
     compile-config))
 
 (symbiont/main initial-state
-               (^start PrepareView [:presentations :errors :stage])
+               (^start PrepareView [:presentations :errors :stage :notes])
                HTTP)
