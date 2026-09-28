@@ -1,7 +1,13 @@
-@{:autostart [:tree :decker :presenter/sentry :watcher]
+@{:autostart [:tree :decker :presenter/sentry :watcher :relay :recorder]
   :build-path "."
   :builder false
-  :builds [:tree :decker :presenter :presenter/sentry :watcher]
+  :builds [:tree
+           :decker
+           :presenter
+           :presenter/sentry
+           :watcher
+           :relay
+           :recorder]
   :data-path "test/data"
   :debug true
   :decker "localhost:5545"
@@ -9,6 +15,8 @@
   :entries @{:decker "decker.janet"
              :presenter "presenter.janet"
              :presenter/sentry "sentry.janet"
+             :recorder "recorder.janet"
+             :relay "relay.janet"
              :tree "tree.janet"
              :watcher "watcher.janet"}
   :entry "demiurge.janet"
@@ -17,10 +25,12 @@
   :log false
   :membrane/rpc "test.localhost:5543"
   :name :demiurge
-  :peers [:tree :decker :presenter :presenter/sentry :watcher]
+  :peers [:tree :decker :presenter :presenter/sentry :watcher :relay :recorder]
   :presenter "localhost:5546"
   :presenter/sentry "localhost:5547"
   :psk "\x1C\xBB:M\xE9\t\x87\xE8\x91\xF2\xF8\x8B\0\xC2z\x99t3\x98\xFC\xAD\xAE\x9B4(D=\xA2Y\x17yZ"
+  :recorder "localhost:5550"
+  :relay "localhost:5549"
   :release-path "_release"
   :rpc "localhost:5543"
   :spaces @{}

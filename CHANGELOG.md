@@ -13,6 +13,9 @@ Format for entries is <version-string> - release date.
   lecturer pages through it alone.
 - Notes on the slides, kept by the tree for the presenter only, following
   their slides through every change of the deck.
+- Thickets follow one another by public keys: a relay hands out the live
+  slide to the keys it was given, and a recorder records what the relays it
+  follows show, to be attended with notes and presented later.
 
 ## 0.0.0 - 2024-10-26
 - Created this project.

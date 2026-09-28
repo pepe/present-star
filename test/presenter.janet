@@ -165,6 +165,22 @@
 (let [m (sse/mark live)]
   (go `{"move":"close"}`)
   (assert (sse/until live m [`Nothing is on the stage`]) "Closing clears the podium"))
+
+(let [m (sse/mark live)]
+  (:save-presentation tree "elsewhere--course"
+                      @{:title "Course" :modified 1500000000
+                        :slides @[[:section [:h1 "Zero"]] [:section [:h1 "Four"]]]
+                        :recorded @{:from "elsewhere" :presentation "course" :count 5
+                                    :at @[0 4] :parts @[{} {}]}})
+  (:attending/set tree "elsewhere" {:title "Course" :presentation "elsewhere--course" :slide 1})
+  (assert (sse/until live m [`Attending` `Course` `from elsewhere` `<h1>Four</h1>` `slide 5 of 5`
+                             `Notes` `data-ignore-morph` `Nothing is on the stage`
+                             `recorded from elsewhere · 2 of 5 slides`])
+          "A lecture attended elsewhere shows on its recorded slide, with a note to write"))
+(let [m (sse/mark live)]
+  (:attending/set tree "elsewhere" false)
+  (def sent (sse/until live m [`Nothing is on the stage`]))
+  (assert (and sent (not (string/find "Attending" sent))) "and goes once it ends"))
 (sse/close live)
 (end-suite)
 (os/exit 0)

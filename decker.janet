@@ -91,7 +91,8 @@
   decker lives.
 
   First it forgets every deck the tree holds whose file is gone -- one
-  deleted while nobody was watching -- and then it scans every `:poll`
+  deleted while nobody was watching, but never a recording, which has no
+  file -- and then it scans every `:poll`
   seconds. A tree that cannot be told now is told on the next scan: only
   what the tree has accepted counts as built.
   ```
@@ -105,8 +106,10 @@
         (produce (log name " follows the decks in " dir))
         (def files (filter |(source? ignore $) (os/dir dir)))
         (def [_ held] (protect (:presentations tree)))
-        (each id (keys (if (dictionary? held) held {}))
-          (unless (index-of (string id ".md") files)
+        (def held (if (dictionary? held) held {}))
+        # A recording has no file, and was never the decker's to forget.
+        (each id (keys held)
+          (unless (or (index-of (string id ".md") files) (get-in held [id :recorded]))
             (protect (tell tree [:remove id]))))
         (forever
           (def [changed gone] (sources/scan dir ignore))

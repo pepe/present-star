@@ -7,10 +7,14 @@ interstudy, metabolon and pacts:
 |---|---|---|
 | `decks.pan.earth` | the lecturer: presenter, held by presenter/sentry | 7880 |
 | `show.pan.earth` | the students: watcher | 7881 |
-| mycelium | demiurge, tree, decker, presenter, presenter/sentry, watcher | 4843–4848 |
+| mycelium | demiurge, tree, decker, presenter, presenter/sentry, watcher, relay, recorder | 4843–4850 |
+| relay | other thickets, by their public keys | 4851, open |
 
-Everything listens on localhost; nginx is the only way in. The config with
-the real secrets is `conf.show.pan.earth.jdn`, gitignored.
+Everything but the relay listens on localhost, and nginx is the only way in.
+The relay listens on `0.0.0.0:4851` itself: it speaks RPC, not HTTP, is
+encrypted by its own handshake, and admits only the public keys in its
+`:followers`. The config with the real secrets is
+`conf.show.pan.earth.jdn`, gitignored.
 
 The box is reached through the `pe` alias of `~/.ssh/config` (pan.earth,
 port 2323). The thicket is the deploy user's, like everything under `/srv`,
@@ -142,6 +146,16 @@ knows no `@reboot`, which is why this is not a crontab.
   second, and every open page shows the new version. No release.
 - **Code.** Push, `dm pull`, `dm release`. A release restarts the peers that
   were running, which signs the lecturer out.
+- **gp or twm.** The peers are built against the gp and twm installed in the
+  box's `prod` environment, so a change to either is installed there before
+  the release:
+  ```
+  ssh deploy@pe "umask 077; cd /srv/src/present-star && . ./prod/bin/activate &&
+                 janet-pm install https://git.sr.ht/~pepe/gp"
+  ```
+- **A follower.** Another thicket may follow the lectures once its public key
+  is in the relay's `:followers`, and this one follows theirs once their key
+  is in the recorder's `:follows`. Both are config: see below.
 - **Config, or the password.** A new password is `janet bin/secrets.janet
   <password>` into `conf.show.pan.earth.jdn`. Peers compile their config in,
   so: `scp` it as `deploy@pe:/srv/src/present-star/conf.jdn` →

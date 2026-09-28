@@ -47,6 +47,9 @@
 
 # A deck left in the tree from a file removed while the decker was down.
 (:save-presentation tree "stale" @{:title "Stale" :slides @[[:section]]})
+# And a recording, which never had a file.
+(:save-presentation tree "elsewhere--course"
+                    @{:title "Course" :slides @[[:section]] :recorded @{:from "elsewhere"}})
 (write "intro.md" "title: The Intro" "author: Josef" "---" "## One" "---" "## Two")
 (write "README.md" "# Not a deck")
 
@@ -59,6 +62,7 @@
 (assert (= (os/stat (path/join dir "intro.md") :modified) ((deck "intro") :modified))
         "stamped with when its file was saved")
 (assert (eventually |(nil? (deck "stale"))) "A deck whose file is gone is forgotten")
+(assert (deck "elsewhere--course") "but a recording is not")
 (assert (nil? (deck "README")) "The README is left alone")
 
 (let [before ((:snapshot tree [:presentations]) :revision)]

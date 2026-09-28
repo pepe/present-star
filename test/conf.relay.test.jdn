@@ -1,0 +1,14 @@
+@{:debug true
+  :entry "relay.janet"
+  :followers {"elsewhere" "091db711ee01cd6c96e40c075a0b0311f948a34e947dbd2d2d52aaa6b3cf7002"}
+  :identity {:public "af48aff4437b39038ce55db9237739f47e6b050b954ae09bea7a2d6628fad926"
+             :secret "e286a15779c94eb5f944054afd57c731dd358487ca2704b4bd9be6eb45f3ac81"}
+  :log false
+  :membrane/rpc "localhost:5552"
+  :name :relay
+  :peers [:tree]
+  :psk "\x1C\xBB:M\xE9\t\x87\xE8\x91\xF2\xF8\x8B\0\xC2z\x99t3\x98\xFC\xAD\xAE\x9B4(D=\xA2Y\x17yZ"
+  :rpc "localhost:5549"
+  :spaces @{}
+  :thicket "present-star"
+  :tree "localhost:5544"}

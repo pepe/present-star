@@ -7,7 +7,7 @@
 
 (def followed
   "What the presenter follows of the tree."
-  [:presentations :errors :stage :notes :cap/session])
+  [:presentations :errors :stage :notes :attending :cap/session])
 
 (def stage/stand-down
   ```
@@ -78,6 +78,35 @@
          [:button {:onclick (string "note(" (json/encode {:deck id :orphan oid}) ")")}
           "Forget"]]])]))
 
+(defn- <source/>
+  "Where slide `n` of a recorded `deck` stood in the lecturer's own."
+  [deck n]
+  (def {:at at :count total} (deck :recorded))
+  (. "slide " (inc (at n)) " of " total))
+
+(defn <attending/>
+  ```
+  The lectures followed from other thickets, each on the slide it shows
+  now, as recorded, with the lecturer's own note on it.
+  ```
+  [attending decks notes]
+  (unless (empty? attending)
+    [:section {:class "attending"}
+     [:h2 "Attending"]
+     (seq [from :in (sorted (keys attending))
+           :let [{:title title :presentation id :slide n} (attending from)
+                 deck (get decks id)]]
+       [:div {:class "attended"}
+        [:p [:strong title] [:span {:class "muted"} " · from " from]]
+        (if (and deck n (slide/at deck n))
+          [:div {:class "on-stage"}
+           (<slide/> (slide/at deck n))
+           [:aside {:class "side"}
+            [:p {:class "part"} (<source/> deck n)]
+            [:h3 "Notes"]
+            (<note/> id n (get-in notes [id :slides n]))]]
+          [:p {:class "muted"} "Staged, not presented yet."])])]))
+
 (defn <on-stage/>
   ```
   The staged slide, what comes after it, its note, and the controls. The
@@ -147,7 +176,10 @@
       [:li (if (= id staged) {:class "staged"} {})
        (unless (= id staged) (<go/> "Stage" "stage" id))
        [:strong (deck :title)]
-       [:span {:class "muted"} id ".md · " (length (deck :slides)) " slides"
+       [:span {:class "muted"}
+        ;(if-let [{:from from :count total} (deck :recorded)]
+           ["recorded from " from " · " (length (deck :slides)) " of " total " slides"]
+           [id ".md · " (length (deck :slides)) " slides"])
         (if (> (length parts) 1) (. " in " (length parts) " sections"))
         (if (deck :date) (. " · " (deck :date)))
         (case noted 0 "" 1 " · 1 note" (. " · " noted " notes"))]
@@ -174,6 +206,7 @@
   (def id (get stage :presentation))
   (def deck (get decks id))
   [:div {:id "podium"}
+   (<attending/> (or (view :attending) {}) decks notes)
    (if deck
      (<on-stage/> id deck stage (errors id) (view :watcher) (get notes id))
      [:section {:class "idle"}
@@ -411,5 +444,5 @@
     compile-config))
 
 (symbiont/main initial-state
-               (^start PrepareView [:presentations :errors :stage :notes])
+               (^start PrepareView [:presentations :errors :stage :notes :attending])
                HTTP)

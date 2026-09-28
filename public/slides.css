@@ -280,6 +280,22 @@ textarea.note:focus {
   outline-offset: -1px;
 }
 
+/* Lectures followed from other thickets, recorded as they go. */
+.attending {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--line);
+}
+.attending h2 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+.attended > p {
+  margin: 0 0 0.5rem;
+}
+
 .orphans {
   display: flex;
   flex-direction: column;

@@ -11,7 +11,7 @@
 
 (def collections/projected
   "Collections a peer may ask the tree to project in one snapshot."
-  [:cap/session :presentations :errors :stage :live :notes])
+  [:cap/session :presentations :errors :stage :live :notes :attending])
 
 (defn- revise
   ```
@@ -247,6 +247,20 @@
      :watch (fn [&] (if (empty? topics) [] [RefreshView Changed (^push ;topics)]))}
     (. "move stage " (string/format "%q" move))))
 
+(defn ^attending/set
+  ```
+  Says what the lecture followed from `from` shows now -- `what` -- or,
+  given false, that it shows nothing. It is kept in the view alone: what
+  another thicket shows is its own to say, and it will say it again.
+  ```
+  [from what]
+  (make-event
+    {:update (fn [_ {:view view}]
+               (put (view :attending) from (if what what nil))
+               (revise view))
+     :watch (^push :attending)}
+    (. "attending " from)))
+
 (defn ^notes/change
   ```
   Changes the notes as `change` says, telling `outcome` whether it did.
@@ -274,6 +288,7 @@
     :stage nil
     :live nil
     :notes @{}
+    :attending @{}
     :errors @{}
     :sessions @{}})
 
@@ -281,7 +296,7 @@
   "Initializes view and puts it in the dyn"
   {:update
    (fn [_ state]
-     (put state :view (merge @{} view/empty {:errors @{} :sessions @{}}))
+     (put state :view (merge @{} view/empty {:errors @{} :sessions @{} :attending @{}}))
      # A new view is a new lineage of revisions: whoever holds a snapshot of
      # an older one must not take this one's for a later moment of it.
      (put (state :view) :projection/epoch (aether/hex (os/cryptorand 16))))
@@ -394,6 +409,17 @@
       (freeze outcome))
     {:status :refused :reason "Unknown move."}))
 
+(defr +:attending/set
+  ```
+  RPC function saying what the lecture followed from `from` shows now:
+  `{:title :presentation :slide}`, its title alone, or false for nothing.
+  ```
+  [applied-resp]
+  (def [from what] args)
+  (assert (present-string? from) "Invalid follow")
+  (assert (or (false? what) (attending? what)) "Invalid attending")
+  [(^attending/set from what)])
+
 (defr +:notes/change
   ```
   RPC function that changes the notes by `change` -- `[:write id n text]`,
@@ -421,9 +447,10 @@
       :remove-presentation +:remove-presentation
       :stage/move +:stage/move
       :notes/change +:notes/change
+      :attending/set +:attending/set
       :stop twm-tree/stop
       :ping (fn [&] :pong)}
-    (tabseq [coll :in [:presentations :errors :stage :live :notes]]
+    (tabseq [coll :in [:presentations :errors :stage :live :notes :attending]]
       coll (fn [&] (define :view) (get view coll)))))
 
 (def initial-state

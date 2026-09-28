@@ -3,7 +3,7 @@
 
 (def symbionts
   "Every symbiont whose derived config the tests hold as a fixture."
-  [:demiurge :tree :decker :presenter :presenter/sentry :watcher])
+  [:demiurge :tree :decker :presenter :presenter/sentry :watcher :relay :recorder])
 
 (defn fixture
   ```

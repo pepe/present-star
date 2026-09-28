@@ -21,6 +21,8 @@ It is a Thicket grown with [TWM](https://git.sr.ht/~pepe/twm) on
 | `presenter` | avatar, guarded | the lecturer's page: the slide, its note, the next one, the decks; moves the stage |
 | `presenter/sentry` | sentry | holds the presenter's door until the password is given |
 | `watcher` | cosymbiont | the students' page: the live slide, and only that |
+| `relay` | cosymbiont, membrane RPC | the live slide for other thickets, to the public keys it was given |
+| `recorder` | mycelium only | follows other thickets' relays, and records what they show into this tree |
 
 The presenter never moves the stage itself. It asks the tree, and the tree
 tells every page what the stage is now.
@@ -79,6 +81,38 @@ presenter ever holds them. When a deck changes, each note goes with its
 slide: a slide moved takes its note along, and so does one edited in place.
 A note whose slide was taken out is kept aside, shown with the slide it was
 written on, to be put on another slide or forgotten.
+
+## Following another thicket
+
+A lecturer with a thicket of their own can attend a lecture given from
+another one, and take notes on it. Every slide shown there is recorded into
+their own tree as it is shown, and the notes are written on the recording.
+
+- The other thicket's **relay** hands out the live slide, as the students'
+  page does, over an encrypted RPC on a port of its own. It admits only the
+  thickets whose public keys it was given, as `:followers`.
+- This thicket's **recorder** follows the relays given in `:follows`, each
+  known by its public key, and records every slide they show. One deck is
+  one recording, lecture after lecture, its slides in the lecturer's order.
+- The presenter shows what is being attended, on its slide, with a note to
+  write. A recording is a deck like any other: it can be staged, paged
+  through with its notes, and presented.
+
+Each thicket has one `:identity`, a keypair from `janet bin/secrets.janet`.
+Following is swapping keys: give the other lecturer your `:public`, put it
+in their relay's `:followers`, and put theirs in your recorder's `:follows`:
+
+```
+:relay {:identity {:public "…" :secret "…"}
+        :followers {"colleague" "<their public key>"}}
+:recorder {:identity {:public "…" :secret "…"}
+           :follows {"their.host" {:rpc "their.host:4851" :key "<their public key>"}}}
+```
+
+No secret ever travels: a public key lets nobody in who does not hold its
+secret. A recorded slide is kept only as far as it is plain text, headings,
+lists, code, and links and images on the web: it is shown in the lecturer's
+own signed-in page, so nothing from elsewhere may run there.
 
 ## Development
 

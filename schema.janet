@@ -85,6 +85,31 @@
          [3 :drop id orphan] (and (deck/id? id) (present-string? orphan))
          false)))
 
+(def- hex/key (peg/compile ~(* (64 :h) -1)))
+
+(defn key/hex?
+  "Whether `hex` is a 32 byte key written in hex, as keys are swapped."
+  [hex]
+  (and (bytes? hex) (truthy? (peg/match hex/key hex))))
+
+(defn identity?
+  "Whether `identity` is a thicket's keypair, `{:public :secret}`, in hex."
+  [identity]
+  (and (dictionary? identity)
+       (key/hex? (get identity :public))
+       (key/hex? (get identity :secret))))
+
+(defn attending?
+  ```
+  Whether `what` says what a lecture followed from another thicket shows:
+  its title, and when a slide is on, the recording and the slide in it.
+  ```
+  [what]
+  (and (dictionary? what)
+       (present-string? (get what :title))
+       (or (nil? (get what :presentation))
+           (and (deck/id? (what :presentation)) (nat? (get what :slide))))))
+
 (def- twm/keys
   "Keys twm puts into a symbiont's derived state of its own accord."
   [:name :thicket :psk :spaces :peers :entries :config :build-path

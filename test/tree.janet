@@ -150,6 +150,14 @@
   (assert (deep= @{0 "about C" 1 "about B"} ((held) :slides))
           "A deck whose file was gone for a while comes back to its notes")
 
+  (def followed {:title "Course" :presentation "abc" :slide 1})
+  (assert (= :ok (:attending/set t "elsewhere" followed)) "What is attended elsewhere is said")
+  (assert (deep= followed (get (:attending t) "elsewhere")) "and projected")
+  (assert-not (first (protect (:attending/set t "elsewhere" {:presentation "abc"})))
+              "A lecture attended without a title is refused")
+  (:attending/set t "elsewhere" false)
+  (assert (nil? (get (:attending t) "elsewhere")) "and one that ended is attended no more")
+
   (defn cookie [session] @{:headers @{"Cookie" @{"session" session}}})
   (assert (= :applied (get (:session/new t "abcd" :presenter/sentry) :status))
           "A session is applied before it is acknowledged")

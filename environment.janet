@@ -2,6 +2,7 @@
 (import twm/navigation
         :only [=>symbiont/initial-state]
         :prefix "" :export true)
+(import jhydro :as hydro)
 
 (def ctx "Jhydro context" "prsnstar")
 
@@ -162,6 +163,34 @@
                                              (projection/^ready)
                                              AetherReady))])]
     "start"))
+
+# Relays
+(def relay/psk
+  ```
+  The shared key of every relay's handshake. It is no secret, and meant to
+  be none: whom a relay admits, and which relay a recorder talks to, the
+  public keys decide.
+  ```
+  "present-star relays: keys decide")
+
+(def relay/wait
+  "Seconds a relay holds a follower's ask before answering it as it stands."
+  20)
+
+(defn key/bin
+  "The key written in `hex`, as jhydro takes it."
+  [hex]
+  (string (hydro/util/hex2bin hex)))
+
+(defn identity/keypair
+  ```
+  The keypair of a thicket's `identity`, `{:public :secret}` in hex, as
+  jhydro takes it. A thicket is known to others by its public key: its
+  relay admits followers by theirs, and its recorder follows relays by
+  theirs.
+  ```
+  [{:public public :secret secret}]
+  {:public-key (key/bin public) :secret-key (key/bin secret)})
 
 # Utils
 (setdyn :ctx ctx)

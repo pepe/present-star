@@ -23,6 +23,14 @@
   :name "watcher"
   :entry "watcher.janet")
 
+(declare-executable
+  :name "relay"
+  :entry "relay.janet")
+
+(declare-executable
+  :name "recorder"
+  :entry "recorder.janet")
+
 (defn check
   ```
   Runs the whole suite through the demiurge, which raises a fresh tree for
