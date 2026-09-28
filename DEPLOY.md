@@ -78,6 +78,15 @@ One file a name, as the box keeps them:
 name to its door on `[::1]`, and keeps the live slide's stream unbuffered
 and open for a whole lecture.
 
+The lecturer's door is also limited. The sentry takes a POST to any path it
+does not route as a sign-in, so nginx refuses every POST but `/`, where the
+password is given, and `/go`, the lecturer's moves, with 405. Per client, `/`
+takes 6 sign-ins at once and then one every ten seconds, and `/go` takes 20
+moves at once and then two a second -- a clicker's pace, and the most anybody
+can guess at `/go` while the sentry holds the door. Past either, nginx
+answers 429 and says so in its error log. certbot leaves all of it alone,
+but on the box the file is certbot's, so change it there by hand.
+
 ```
 scp deploy/nginx/decks.pan.earth.conf deploy/nginx/show.pan.earth.conf pe:/tmp/
 ssh pe "doas mv /tmp/decks.pan.earth.conf /tmp/show.pan.earth.conf /etc/nginx/http.d/ &&
