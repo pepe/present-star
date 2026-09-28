@@ -1,0 +1,14 @@
+@{:debug true
+  :entry "tree.janet"
+  :image "test/data/tree"
+  :log false
+  :name :tree
+  :peers [:presenter :presenter/sentry :watcher]
+  :presenter "localhost:5546"
+  :presenter/sentry "localhost:5547"
+  :psk "\x1C\xBB:M\xE9\t\x87\xE8\x91\xF2\xF8\x8B\0\xC2z\x99t3\x98\xFC\xAD\xAE\x9B4(D=\xA2Y\x17yZ"
+  :rpc "localhost:5544"
+  :seed "seed.jdn"
+  :spaces @{}
+  :thicket "present-star"
+  :watcher "localhost:5548"}

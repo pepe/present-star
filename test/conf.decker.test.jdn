@@ -1,0 +1,13 @@
+@{:debug true
+  :entry "decker.janet"
+  :ignore ["README.md"]
+  :log false
+  :name :decker
+  :peers [:tree]
+  :poll 0.1
+  :psk "\x1C\xBB:M\xE9\t\x87\xE8\x91\xF2\xF8\x8B\0\xC2z\x99t3\x98\xFC\xAD\xAE\x9B4(D=\xA2Y\x17yZ"
+  :rpc "localhost:5545"
+  :sources "test/decks"
+  :spaces @{}
+  :thicket "present-star"
+  :tree "localhost:5544"}

@@ -1,0 +1,69 @@
+{:name "present-star"
+ :deploy
+ {:host "test.localhost"
+  :build-path "."
+  :release-path "_release"
+  :data-path "test/data"
+  :env "dev"
+  :dry false}
+ :runtime
+ {:debug true
+  :log false}
+ :symbionts
+ {:demiurge
+  {:builder false
+   :entry "demiurge.janet"
+   :autostart [:tree :decker :presenter/sentry :watcher]
+   :builds [:tree :decker :presenter :presenter/sentry :watcher]
+   # Seconds a presenter may sit unused, with nothing on the stage, before
+   # it stands down.
+   :timeout 300}
+  :tree {:image "tree" :seed "seed.jdn" :entry "tree.janet"}
+  :decker {:entry "decker.janet" :sources "test/decks" :ignore ["README.md"] :poll 0.1}
+  :presenter {:guarded-by :presenter/sentry :entry "presenter.janet"}
+  # The password is `testist`.
+  :presenter/sentry
+  {:guards :presenter
+   :entry "sentry.janet"
+   :key "\xBA\xE1\0\xEEZ\x05\xECp^\xBCN=y\xE9\x1D\xB2\x18\x86\xD0\xB5u\n\xBF,u\xF7_\xC7\xA2\x96\xF7\xAF"
+   :secret "\x01\xB5\x06\x14@\xFF\x11\xD5\xFE.g\xD2\x89\x94C\xFAAt>B\xD1\xE4,\x8F\xE6. \xF9\xA7\xEE\x17\xDA^\xF3s\xFA\xAA\xF0\x9DD\"\xEF\xB3\xBF\xCAx\xA5\xECz\x81\x10\xEB\am\x82R\xE4u\x83}x\x1C\xB3g\x9A\v\xEA\x0FX\xAE\xE1\xF7;\x1E[\xE34\x04a\xF7\t\x9E\xFD\x90.\xBA\xAD 9\xE6\x96n!\xC7\x93\x82\xAD\x16\x80\x17Y\xADj\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"}
+  :watcher {:entry "watcher.janet"}}
+ :mycelium
+ {:psk "\x1C\xBB:M\xE9\t\x87\xE8\x91\xF2\xF8\x8B\0\xC2z\x99t3\x98\xFC\xAD\xAE\x9B4(D=\xA2Y\x17yZ"
+  :nodes
+  {:demiurge
+   {:rpc "localhost:5543"
+    :peers [:tree :decker :presenter :presenter/sentry :watcher]}
+   :tree
+   {:rpc "localhost:5544"
+    :peers [:presenter :presenter/sentry :watcher]}
+   :decker
+   {:rpc "localhost:5545"
+    :peers [:tree]}
+   :presenter
+   {:rpc "localhost:5546"
+    :peers [:tree]}
+   :presenter/sentry
+   {:rpc "localhost:5547"
+    :peers [:tree]}
+   :watcher
+   {:rpc "localhost:5548"
+    :peers [:tree]}}}
+ :membrane
+ {:nodes
+  {:demiurge {:rpc "test.localhost:5543"}
+   :presenter
+   {:http "localhost:8880"
+    # The door the session is granted at. A guardian must hold exactly one.
+    :entrance true
+    :cookie-host "localhost"
+    :address "http://localhost:8880"
+    :static true
+    :public "public"
+    :neighbors [:watcher]}
+   :watcher
+   {:http "localhost:8881"
+    :cookie-host "localhost"
+    :address "http://localhost:8881"
+    :static true
+    :public "public"}}}}

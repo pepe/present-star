@@ -1,1 +1,16 @@
-jpm_tree
+# janet-pm environments: `dev` here, `prod` on the server
+dev
+prod
+# Configuration carries secrets; each peer's is derived from it at spawn
+conf.jdn
+conf.*.jdn
+!conf.example.jdn
+!test/conf.test.jdn
+!test/conf.*.test.jdn
+# Stores, their locks, and builds
+data
+test/data
+*.jimage
+*.lock
+_build
+_release

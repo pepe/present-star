@@ -1,0 +1,11 @@
+{:name "present-star"
+ :description "Decks written in Markdown, presented at a URL, followed live"
+ :author "Josef Pospíšil"
+ :license "MIT"
+ :repo "https://github.com/pepe/present-star"
+ :url "https://github.com/pepe/present-star"
+ :jpm-dependencies ["spork" "jhydro"
+                    "https://git.sr.ht/~pepe/gp"
+                    "https://git.sr.ht/~pepe/twm"]
+ :dependencies ["spork" "jhydro" "gp" "twm"]
+ :version "0.1.0"}

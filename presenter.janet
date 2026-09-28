@@ -1,0 +1,308 @@
+(use /environment /schema)
+(import twm/symbiont :as symbiont)
+(import twm/sentry
+        :only [session/check-with /logout StandDown] :prefix "")
+
+(setdyn *handler-defines* [:view])
+
+(def followed
+  "What the presenter follows of the tree."
+  [:presentations :errors :stage :cap/session])
+
+(def stage/stand-down
+  ```
+  The notice telling a live `/content` stream its presenter is going.
+
+  A logout is asked for and answered with its own transition. A stop the
+  demiurge orders -- the idle timeout -- is asked for by nobody, and the
+  stream would simply die under a page still showing a place that has
+  gone. This is how that leaving reaches the page.
+  ```
+  :stage/stand-down)
+
+(defn deck/order
+  ```
+  The ids of `decks` in the order a course runs: by the date each deck
+  names, then by file name. A deck with no date comes first.
+  ```
+  [decks]
+  (sorted-by |[(get-in decks [$ :date] "") $] (keys decks)))
+
+(defn- <go/>
+  "A button carrying one intent to the stage."
+  [text & intent]
+  [:button {:onclick (string "go(" (string/join (map json/encode intent) ",") ")")}
+   text])
+
+(defn- <failure/>
+  [{:file file :line line :message message}]
+  [:p {:class "error"}
+   [:strong file (if line (. ":" line))] " " message])
+
+(defn <on-stage/>
+  "The staged slide, what comes after it, and the controls."
+  [id deck n err watcher]
+  (def total (length (deck :slides)))
+  (def part (or (section/at deck n) {}))
+  (def parted (> (length (get deck :sections [])) 1))
+  [:div {:class "on-stage"}
+   (<slide/> (slide/at deck n))
+   [:aside {:class "side"}
+    [:p {:class "position"} (inc n) " / " total]
+    (if (and parted (part :title))
+      [:p {:class "part"} [:strong (part :title)] " · "
+       (inc (- n (part :first))) " of " (part :count)])
+    [:div {:class "controls"}
+     (<go/> "← Previous" "previous")
+     [:button {:class "primary" :onclick "go(\"next\")"} "Next →"]
+     (<go/> "Stop" "stop")]
+    [:h3 "Next"]
+    (if-let [upcoming (slide/at deck (inc n))]
+      (<slide/> upcoming "preview")
+      [:p {:class "the-end"} "This is the last slide."])
+    (<deck/line/> {:title (deck :title)
+                   :section (part :title)
+                   :author (get part :author (deck :author))
+                   :date (get part :date (deck :date))})
+    (if err (<failure/> err))
+    (if watcher
+      [:p {:class "follow"} "Students follow at "
+       [:a {:href watcher :target "_blank" :rel "noopener"} watcher]])]])
+
+(defn <decks/>
+  "Every deck the tree holds, with how its last build went."
+  [decks errors stage]
+  (def staged (get stage :presentation))
+  (def unbuilt (seq [id :keys errors :unless (decks id)] id))
+  [:section {:class "decks"}
+   [:h2 "Decks"]
+   (if (and (empty? decks) (empty? unbuilt))
+     [:p {:class "muted"} "No decks yet. Save a Markdown deck into the sources."])
+   [:ul
+    (seq [id :in (deck/order decks)
+          :let [deck (decks id)
+                parts (get deck :sections [])]]
+      [:li (if (= id staged) {:class "staged"} {})
+       (<go/> "Present" "start" id)
+       [:strong (deck :title)]
+       [:span {:class "muted"} id ".md · " (length (deck :slides)) " slides"
+        (if (> (length parts) 1) (. " in " (length parts) " sections"))
+        (if (deck :date) (. " · " (deck :date)))]
+       (if-let [err (errors id)] (<failure/> err))
+       # A deck in parts can be taken up at any of them: a course deck is
+       # presented a section a lecture.
+       (if (> (length parts) 1)
+         [:ol {:class "parts"}
+          (seq [part :in parts]
+            [:li (<go/> (part :title) "goto" id (part :first))
+             [:span {:class "muted"} (part :count) " slides"
+              (if (part :date) (. " · " (part :date)))]])])])
+    (seq [id :in (sorted unbuilt)]
+      [:li [:strong id ".md"] (<failure/> (errors id))])]])
+
+(defn <podium/>
+  "Everything the presenter shows, rendered from the view."
+  []
+  (define :view)
+  (def decks (or (view :presentations) {}))
+  (def errors (or (view :errors) {}))
+  (def stage (view :stage))
+  (def id (get stage :presentation))
+  (def deck (get decks id))
+  [:div {:id "podium"}
+   (if deck
+     (<on-stage/> id deck (stage :slide) (errors id) (view :watcher))
+     [:section {:class "idle"}
+      [:h2 "Nothing is on the stage"]
+      [:p {:class "muted"} "Present one of the decks below."]])
+   (<decks/> decks errors stage)])
+
+(def- <keys/>
+  ```
+  The one place the page asks anything of the stage.
+
+  Keys, clickers and buttons all gather intent; `go` alone carries it, and
+  it carries only intent. The page does not move itself: it shows the
+  slide the tree says is on the stage, pushed back over `/content`, so the
+  lecturer sees exactly what the students see.
+  ```
+  [:script
+   (hg/raw
+     ``function go(move, deck, slide) {
+        fetch("/go", {method: "POST",
+                      headers: {"Content-Type": "application/json"},
+                      body: JSON.stringify({move: move, deck: deck, slide: slide})});
+      }
+      document.addEventListener("keydown", function (e) {
+        if (e.target.closest("input, textarea, select") || e.altKey || e.ctrlKey || e.metaKey) return;
+        if (["ArrowRight", "PageDown", " "].includes(e.key)) { e.preventDefault(); go("next"); }
+        else if (["ArrowLeft", "PageUp"].includes(e.key)) { e.preventDefault(); go("previous"); }
+      });``)])
+
+(defn <not-auth/>
+  "What a request without the presenter's session is answered with."
+  []
+  (<page/> "Presenter"
+           [:main {:id "stage"}
+            [:p "Your session is not valid. " [:a {:href "/"} "Sign in again"]]]))
+
+(defn ^activity
+  "Event that marks the presenter as used at `ts`."
+  [ts]
+  (make-update
+    (fn [_ {:view view}] (put view :last-active ts))
+    "activity"))
+
+(def session/admitted
+  ```
+  Admits a request with a valid session, without counting it as use.
+
+  For the page's `/content` stream alone. The browser opens it again by
+  itself whenever it is cut, and a reopening nobody asked for is not use.
+  ```
+  (session/check-with (<not-auth/>)))
+
+(defn session/checker
+  "Admits a request with a valid session, and counts it as use."
+  [next-middleware]
+  (session/admitted
+    (fn counted [req]
+      (produce (^activity (os/time)))
+      (next-middleware req))))
+
+(defh /index
+  "The presenter's page."
+  [page/app session/checker]
+  ["Presenter"
+   @[[:div {:data-init (ds/get "/content")} (<podium/>)]
+     <keys/>]
+   :logout])
+
+(defh /content
+  ```
+  The page's one live stream. It renders the podium once, and again every
+  time the tree says the decks, their errors or the stage changed.
+  ```
+  [session/admitted]
+  (view/stream
+    view [;followed stage/stand-down]
+    (fn [] (ds/hg/patch (<podium/>)))
+    (fn [_] (ds/hg/patch (<podium/>)))
+    (fn []
+      (protect
+        (:write (dyn :sse-conn) (view :transition/logout))
+        (:flush (dyn :sse-conn))))))
+
+(defn move/of
+  "The move the lecturer's `intent`, as `/go` receives it, asks for, or nil."
+  [{:move m :deck deck :slide slide}]
+  (case m
+    "next" [:next]
+    "previous" [:previous]
+    "stop" [:stop]
+    "start" [:start deck]
+    "goto" [:goto deck slide]))
+
+(defn ^stage/move
+  ```
+  Carries the lecturer's intent to the tree, which decides.
+
+  Nothing here assumes the move happened. The tree answers every
+  registered presenter and watcher with the stage it settled on, and that
+  push is what the page shows.
+  ```
+  [move]
+  (make-effect
+    (fn [_ {:tree tree :name name} _]
+      (match (protect (:stage/move tree ;move))
+        [true {:status :refused :reason reason}]
+        (eprint name " stage move " (string/format "%q" move) " refused: " reason)
+        [false err]
+        (eprint name " could not move the stage: " err)))
+    "move stage"))
+
+(defh /go
+  "Accepts one intent for the stage, and hands it to the tree."
+  [session/checker http/keywordize-body http/json->body]
+  (def move (move/of (or body {})))
+  (if (move? move)
+    (do (produce (^stage/move move))
+      (http/no-content))
+    (http/bad-request)))
+
+(defr -:ping/active
+  ```
+  RPC function reporting when the presenter was last used.
+
+  While a deck is on the stage it is in use now: a lecturer may talk over
+  one slide for as long as it takes, and being stopped for it would be
+  stopped mid-lecture.
+  ```
+  []
+  (define :view)
+  [:last-active (if (view :stage) (os/time) (view :last-active))])
+
+(defn ^stand-down/after-stage
+  "Waits for live streams to finish their leaving, within a bound, and stands down."
+  []
+  (make-watch
+    (fn [_ {:view view} _]
+      (producer
+        (protect (subscription/drain view stage/stand-down 1))
+        (produce StandDown)))
+    "stand down after stage responses"))
+
+(defr +:stop/guarded
+  ```
+  RPC function that stops the presenter -- the demiurge's, when it has
+  been idle too long. Whoever is watching the page is told first, over the
+  stream they hold, and the page goes back to the door.
+  ```
+  [produce-resp ok-resp]
+  (define :view)
+  [(log (view :name) "'s RPC server stops")
+   (^notify/send stage/stand-down)
+   (^stand-down/after-stage)])
+
+(define-event PrepareView
+  "Initializes the view and puts it in the dyn"
+  {:update
+   (fn [_ state]
+     (put state :view
+          @{:cap/session (>base false)
+            # Standing up counts as use: the idle clock starts now, not at
+            # a first request that may never come.
+            :last-active (os/time)
+            :name (state :name)
+            :watcher (state :watcher)
+            # A logout hands the door back to the sentry, which answers on
+            # this very address.
+            :transition/logout
+            (transition/leaving (state :address) (state :name))}))
+   :effect (fn [_ {:view view} _]
+             (setdyn :ctx ctx)
+             (setdyn :view view))})
+
+(def routes
+  "HTTP routes"
+  @{"/" /index
+    "/content" /content
+    "/go" (http/dispatch {"POST" /go})
+    "/logout" /logout})
+
+(def rpc-funcs
+  "RPC functions"
+  @{:refresh (refresh/following followed)
+    # Reporting last use is what lets the demiurge stop a presenter left idle.
+    :ping -:ping/active
+    :stop +:stop/guarded})
+
+(def initial-state
+  "Initial state"
+  ((=> (>put :routes routes)
+       (>update :rpc (update-rpc rpc-funcs)))
+    compile-config))
+
+(symbiont/main initial-state
+               (^start PrepareView [:presentations :errors :stage])
+               HTTP)

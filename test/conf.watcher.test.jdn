@@ -1,0 +1,15 @@
+@{:address "http://localhost:8881"
+  :cookie-host "localhost"
+  :debug true
+  :entry "watcher.janet"
+  :http "localhost:8881"
+  :log false
+  :name :watcher
+  :peers [:tree]
+  :psk "\x1C\xBB:M\xE9\t\x87\xE8\x91\xF2\xF8\x8B\0\xC2z\x99t3\x98\xFC\xAD\xAE\x9B4(D=\xA2Y\x17yZ"
+  :public "public"
+  :rpc "localhost:5548"
+  :spaces @{}
+  :static true
+  :thicket "present-star"
+  :tree "localhost:5544"}
