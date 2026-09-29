@@ -94,9 +94,11 @@ their own tree as it is shown, and the notes are written on the recording.
 - This thicket's **recorder** follows the relays given in `:follows`, each
   known by its public key, and records every slide they show. One deck is
   one recording, lecture after lecture, its slides in the lecturer's order.
-- The presenter shows what is being attended, on its slide, with a note to
-  write. A recording is a deck like any other: it can be staged, paged
-  through with its notes, and presented.
+- The presenter has two tabs, each an address of its own, so both can be
+  open side by side: *Stage* at `/`, and *Attending* at `/attending`, which
+  shows what is attended on its slide, with a note to write. The keys move
+  the stage on the Stage tab alone. A recording is a deck like any other:
+  it can be staged, paged through with its notes, and presented.
 
 Each thicket has one `:identity`, a keypair from `janet bin/secrets.janet`.
 Following is swapping keys: give the other lecturer your `:public`, put it

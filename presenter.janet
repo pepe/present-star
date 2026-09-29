@@ -84,15 +84,27 @@
   (def {:at at :count total} (deck :recorded))
   (. "slide " (inc (at n)) " of " total))
 
+(defn- <tabs/>
+  ```
+  The presenter's two tabs: the stage, and the lectures attended elsewhere.
+  Each is an address of its own, so both may be open at once, side by
+  side. Wherever it is seen from, the attending tab says how many are on.
+  ```
+  [current attending]
+  [:nav {:class "tabs"}
+   [:a {:href "/" :class (if (= current :stage) "active")} "Stage"]
+   [:a {:href "/attending" :class (if (= current :attending) "active")}
+    "Attending"
+    (unless (empty? attending) [:span {:class "badge"} (length attending)])]])
+
 (defn <attending/>
   ```
   The lectures followed from other thickets, each on the slide it shows
-  now, as recorded, with the lecturer's own note on it.
+  now, as recorded, with the lecturer's own note on it; nil for none.
   ```
   [attending decks notes]
   (unless (empty? attending)
     [:section {:class "attending"}
-     [:h2 "Attending"]
      (seq [from :in (sorted (keys attending))
            :let [{:title title :presentation id :slide n} (attending from)
                  deck (get decks id)]]
@@ -206,7 +218,7 @@
   (def id (get stage :presentation))
   (def deck (get decks id))
   [:div {:id "podium"}
-   (<attending/> (or (view :attending) {}) decks notes)
+   (<tabs/> :stage (or (view :attending) {}))
    (if deck
      (<on-stage/> id deck stage (errors id) (view :watcher) (get notes id))
      [:section {:class "idle"}
@@ -216,14 +228,43 @@
        "until you present it."]])
    (<decks/> decks errors stage notes)])
 
+(defn <attended/>
+  "Everything the attending tab shows, rendered from the view."
+  []
+  (define :view)
+  (def attending (or (view :attending) {}))
+  [:div {:id "podium"}
+   (<tabs/> :attending attending)
+   (or (<attending/> attending (or (view :presentations) {}) (or (view :notes) {}))
+       [:section {:class "idle"}
+        [:h2 "Nothing is attended"]
+        [:p {:class "muted"}
+         "A lecture given from a thicket this one follows shows here while "
+         "it is on. What it showed is recorded among the decks."]])])
+
+(def- <notes/script/>
+  ```
+  The one place a page asks anything of the notes. `note` carries only
+  intent, and the page shows the note the tree pushes back.
+  ```
+  [:script
+   (hg/raw
+     ``function note(intent, text) {
+        if (text !== undefined) intent.text = text;
+        fetch("/note", {method: "POST",
+                        headers: {"Content-Type": "application/json"},
+                        body: JSON.stringify(intent)});
+      }``)])
+
 (def- <keys/>
   ```
-  The one place the page asks anything of the stage, and of the notes.
+  The one place the stage tab asks anything of the stage.
 
-  Keys, clickers and buttons all gather intent; `go` and `note` alone carry
-  it, and they carry only intent. The page does not move itself: it shows
-  the slide the tree says is on the stage, and the notes the tree keeps,
-  pushed back over `/content`, so the lecturer sees exactly what is so.
+  Keys, clickers and buttons all gather intent; `go` alone carries it, and
+  it carries only intent. The page does not move itself: it shows the
+  slide the tree says is on the stage, pushed back over `/content`, so the
+  lecturer sees exactly what the students see. The keys are the stage
+  tab's alone: on the attending tab, somebody else's lecture is on.
   ```
   [:script
    (hg/raw
@@ -231,12 +272,6 @@
         fetch("/go", {method: "POST",
                       headers: {"Content-Type": "application/json"},
                       body: JSON.stringify({move: move, deck: deck, slide: slide})});
-      }
-      function note(intent, text) {
-        if (text !== undefined) intent.text = text;
-        fetch("/note", {method: "POST",
-                        headers: {"Content-Type": "application/json"},
-                        body: JSON.stringify(intent)});
       }
       document.addEventListener("keydown", function (e) {
         if (e.target.closest("input, textarea, select") || e.altKey || e.ctrlKey || e.metaKey) return;
@@ -276,27 +311,47 @@
       (next-middleware req))))
 
 (defh /index
-  "The presenter's page."
+  "The presenter's stage tab."
   [page/app session/checker]
   ["Presenter"
    @[[:div {:data-init (ds/get "/content")} (<podium/>)]
+     <notes/script/>
      <keys/>]
    :logout])
 
-(defh /content
+(defh /attending
+  "The presenter's attending tab: the lectures followed from elsewhere."
+  [page/app session/checker]
+  ["Attending"
+   @[[:div {:data-init (ds/get "/attending/content")} (<attended/>)]
+     <notes/script/>]
+   :logout])
+
+(defn- live
   ```
-  The page's one live stream. It renders the podium once, and again every
-  time the tree says the decks, their errors or the stage changed.
+  A tab's one live stream, rendering `render` once, and again every time
+  the tree says anything the presenter follows changed. A presenter going
+  away takes the tab back to the door.
   ```
-  [session/admitted]
+  [view render]
   (view/stream
     view [;followed stage/stand-down]
-    (fn [] (ds/hg/patch (<podium/>)))
-    (fn [_] (ds/hg/patch (<podium/>)))
+    (fn [] (ds/hg/patch (render)))
+    (fn [_] (ds/hg/patch (render)))
     (fn []
       (protect
         (:write (dyn :sse-conn) (view :transition/logout))
         (:flush (dyn :sse-conn))))))
+
+(defh /content
+  "The stage tab's live stream, of the podium."
+  [session/admitted]
+  (live view <podium/>))
+
+(defh /attending/content
+  "The attending tab's live stream, of the lectures attended."
+  [session/admitted]
+  (live view <attended/>))
 
 (defn move/of
   "The move the lecturer's `intent`, as `/go` receives it, asks for, or nil."
@@ -375,11 +430,13 @@
 
   While a deck is on the stage it is in use now: a lecturer may talk over
   one slide for as long as it takes, and being stopped for it would be
-  stopped mid-lecture.
+  stopped mid-lecture. So it is while a lecture is attended: listening
+  is use too, even with nothing written.
   ```
   []
   (define :view)
-  [:last-active (if (view :stage) (os/time) (view :last-active))])
+  (def busy (or (view :stage) (not (empty? (or (view :attending) {})))))
+  [:last-active (if busy (os/time) (view :last-active))])
 
 (defn ^stand-down/after-stage
   "Waits for live streams to finish their leaving, within a bound, and stands down."
@@ -426,6 +483,8 @@
   "HTTP routes"
   @{"/" /index
     "/content" /content
+    "/attending" /attending
+    "/attending/content" /attending/content
     "/go" (http/dispatch {"POST" /go})
     "/note" (http/dispatch {"POST" /note})
     "/logout" /logout})

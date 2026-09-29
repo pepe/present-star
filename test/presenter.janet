@@ -67,7 +67,7 @@
 (let [resp (request "GET" (url "/") :headers cookie)]
   (assert ((success-has? `Presenter` `Log out` `Nothing is on the stage` `The Intro`
                          `intro.md · 2 slides · 2026-02-23`
-                         `draft.md:3` `function go(` `function note(`)
+                         `draft.md:3` `function note(` `function go(`)
             resp)
           "The lecturer sees the decks, and the one that did not build"))
 
@@ -166,21 +166,37 @@
   (go `{"move":"close"}`)
   (assert (sse/until live m [`Nothing is on the stage`]) "Closing clears the podium"))
 
-(let [m (sse/mark live)]
+(assert (= 401 ((request "GET" (url "/attending")) :status))
+        "The attending tab is the lecturer's alone")
+(let [resp (request "GET" (url "/attending") :headers cookie)]
+  (assert ((success-has? `>Stage</a>` `class="active"` `Nothing is attended` `function note(`)
+            resp)
+          "and says when nothing is attended")
+  (assert-not (string/find "function go(" (resp :body)) "It moves no stage"))
+
+(def attended (sse/open http "/attending/content" "abcd"))
+(assert (sse/until attended 0 [`id="podium"` `Nothing is attended`])
+        "Its stream starts with what is on now")
+(let [m (sse/mark live)
+      a (sse/mark attended)]
   (:save-presentation tree "elsewhere--course"
                       @{:title "Course" :modified 1500000000
                         :slides @[[:section [:h1 "Zero"]] [:section [:h1 "Four"]]]
                         :recorded @{:from "elsewhere" :presentation "course" :count 5
                                     :at @[0 4] :parts @[{} {}]}})
   (:attending/set tree "elsewhere" {:title "Course" :presentation "elsewhere--course" :slide 1})
-  (assert (sse/until live m [`Attending` `Course` `from elsewhere` `<h1>Four</h1>` `slide 5 of 5`
-                             `Notes` `data-ignore-morph` `Nothing is on the stage`
-                             `recorded from elsewhere · 2 of 5 slides`])
-          "A lecture attended elsewhere shows on its recorded slide, with a note to write"))
-(let [m (sse/mark live)]
+  (assert (sse/until attended a [`Course` `from elsewhere` `<h1>Four</h1>` `slide 5 of 5`
+                                 `Notes` `data-ignore-morph`])
+          "A lecture attended elsewhere shows on its recorded slide, with a note to write")
+  (def staged (sse/until live m [`href="/attending"` `class="badge">1</span>`
+                                 `Nothing is on the stage`
+                                 `recorded from elsewhere · 2 of 5 slides`]))
+  (assert staged "The stage tab says one is attended, and lists its recording")
+  (assert-not (string/find "<h1>Four</h1>" staged) "but shows none of it"))
+(let [a (sse/mark attended)]
   (:attending/set tree "elsewhere" false)
-  (def sent (sse/until live m [`Nothing is on the stage`]))
-  (assert (and sent (not (string/find "Attending" sent))) "and goes once it ends"))
+  (assert (sse/until attended a [`Nothing is attended`]) "Once it ends, nothing is attended"))
+(sse/close attended)
 (sse/close live)
 (end-suite)
 (os/exit 0)
