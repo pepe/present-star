@@ -61,7 +61,7 @@
               :data-deck id
               :data-slide n
               :data-slides slides
-              :rows 5
+              :rows 10
               :maxlength 4000
               :placeholder (string "Notes on this slide, for you alone"
                                    (if slides ". Ctrl+← and Ctrl+→ move through the deck." ""))
