@@ -86,7 +86,10 @@
                                `Students follow at` `http://localhost:8881`
                                `On the stage` `The Intro`]))
   (assert sent "and the podium shows the slide, its note, the next one, and where students follow")
-  (assert-not (string/find "draft.md" sent) "The other decks are put away meanwhile"))
+  (assert-not (string/find "draft.md" sent) "The other decks are put away meanwhile")
+  (assert (string/find "Ctrl+← and Ctrl+→ move through the deck" sent)
+          "The note says how to move on from it")
+  (assert (string/find `data-slide="0"` sent) "and knows its slide"))
 (assert (deep= {:presentation "intro" :slide 0 :presenting false} (:stage tree))
         "The tree decided it, and shows the students nothing yet")
 
@@ -185,9 +188,10 @@
                         :recorded @{:from "elsewhere" :presentation "course" :count 5
                                     :at @[0 4] :parts @[{} {}]}})
   (:attending/set tree "elsewhere" {:title "Course" :presentation "elsewhere--course" :slide 1})
-  (assert (sse/until attended a [`Course` `from elsewhere` `<h1>Four</h1>` `slide 5 of 5`
-                                 `Notes` `data-ignore-morph`])
-          "A lecture attended elsewhere shows on its recorded slide, with a note to write")
+  (def shown (sse/until attended a [`Course` `from elsewhere` `<h1>Four</h1>` `slide 5 of 5`
+                                    `Notes` `data-ignore-morph`]))
+  (assert shown "A lecture attended elsewhere shows on its recorded slide, with a note to write")
+  (assert-not (string/find "Ctrl+←" shown) "whose keys move no deck of this lecturer's")
   (def staged (sse/until live m [`href="/attending"` `class="badge">1</span>`
                                  `Nothing is on the stage`
                                  `recorded from elsewhere · 2 of 5 slides`]))

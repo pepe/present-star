@@ -50,14 +50,21 @@
   whatever was typed since the last save. So the note is never morphed,
   and is named after its deck, slide and text instead: a push that changes
   any of them brings a new one in its place.
+
+  On the stage, where the keys move the deck, it is told how many
+  `slides` there are, and says how to move on through them.
   ```
-  [id n text]
+  [id n text &opt slides]
   [:textarea {:id (string "note-" (hash (string/join [id (string n) (or text "")] "\n")))
               :class "note"
               :data-ignore-morph true
+              :data-deck id
+              :data-slide n
+              :data-slides slides
               :rows 5
               :maxlength 4000
-              :placeholder "Notes on this slide, for you alone"
+              :placeholder (string "Notes on this slide, for you alone"
+                                   (if slides ". Ctrl+← and Ctrl+→ move through the deck." ""))
               :onchange (string "note(" (json/encode {:deck id :slide n}) ", this.value)")}
    (or text "")])
 
@@ -151,7 +158,7 @@
        [:button {:class "primary" :onclick "go(\"present\")"} "Present"])
      (unless shown (<go/> "Close" "close"))]
     [:h3 "Notes"]
-    (<note/> id n (get-in held [:slides n]))
+    (<note/> id n (get-in held [:slides n]) total)
     [:h3 "Next"]
     (if-let [upcoming (slide/at deck (inc n))]
       (<slide/> upcoming "preview")
@@ -265,6 +272,12 @@
   slide the tree says is on the stage, pushed back over `/content`, so the
   lecturer sees exactly what the students see. The keys are the stage
   tab's alone: on the attending tab, somebody else's lecture is on.
+
+  Ctrl with an arrow moves the deck even from the note, so a lecturer can
+  go through it writing. The note is saved as it is left, and the next
+  slide's note takes the cursor once it arrives -- once a note of another
+  slide is there, since saving brings this slide's note back first. Past
+  either end there is nowhere to go, and the note is not left at all.
   ```
   [:script
    (hg/raw
@@ -273,7 +286,33 @@
                       headers: {"Content-Type": "application/json"},
                       body: JSON.stringify({move: move, deck: deck, slide: slide})});
       }
+      var noteLeft = null;
+      function takeNote() {
+        var t = document.querySelector("#podium textarea.note");
+        if (!noteLeft || !t) return;
+        var moved = t.dataset.deck !== noteLeft.deck || t.dataset.slide !== noteLeft.slide;
+        if (moved || Date.now() > noteLeft.until) {
+          noteLeft = null;
+          t.focus();
+          t.setSelectionRange(t.value.length, t.value.length);
+        }
+      }
+      new MutationObserver(takeNote).observe(document.body, {childList: true, subtree: true});
       document.addEventListener("keydown", function (e) {
+        var arrow = {ArrowRight: "next", ArrowLeft: "previous"}[e.key];
+        if (arrow && e.ctrlKey && !e.altKey && !e.metaKey && !e.shiftKey) {
+          e.preventDefault();
+          var t = e.target.closest && e.target.closest("textarea.note");
+          if (t) {
+            var n = Number(t.dataset.slide);
+            if (arrow === "next" ? n + 1 >= Number(t.dataset.slides) : n === 0) return;
+            noteLeft = {deck: t.dataset.deck, slide: t.dataset.slide, until: Date.now() + 3000};
+            t.blur();
+            setTimeout(takeNote, 3100);
+          }
+          go(arrow);
+          return;
+        }
         if (e.target.closest("input, textarea, select") || e.altKey || e.ctrlKey || e.metaKey) return;
         if (["ArrowRight", "PageDown", " "].includes(e.key)) { e.preventDefault(); go("next"); }
         else if (["ArrowLeft", "PageUp"].includes(e.key)) { e.preventDefault(); go("previous"); }
