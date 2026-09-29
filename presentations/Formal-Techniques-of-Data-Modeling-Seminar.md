@@ -75,7 +75,7 @@ Try examples.
 Challenge assumptions.  
 Make connections.
 
-Theoretical informatics is much more fun  
+Data modelling is much more fun  
 when we actually **think together**.
 
 ---
