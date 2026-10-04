@@ -63,7 +63,9 @@
 (start-suite :http)
 (let [resp (request "GET" (url "/"))]
   (assert (= 401 (resp :status)) "Nobody without the session presents")
-  (assert ((??? {:body (?find "Sign in again")}) resp) "and is told how to get in"))
+  (assert ((??? {:body (?find "Sign in again")}) resp) "and is told how to get in")
+  (assert ((??? {:body (?find `data-on:click="@get(&#39;/logout&#39;)"`)}) resp)
+          "which signs the presenter out, so the sentry asks for the password"))
 (let [resp (request "GET" (url "/") :headers cookie)]
   (assert ((success-has? `Presenter` `Log out` `Nothing is on the stage` `The Intro`
                          `intro.md · 2 slides · 2026-02-23`

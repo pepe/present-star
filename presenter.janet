@@ -319,11 +319,22 @@
       });``)])
 
 (defn <not-auth/>
-  "What a request without the presenter's session is answered with."
+  ```
+  What a request without the presenter's session is answered with.
+
+  The presenter answers `/` itself for as long as it stands, so a link
+  there only brings this page back -- and with a deck on the stage it
+  stands for good. The password is the sentry's to ask for, and the sentry
+  takes the door back once the presenter has signed out and gone. So
+  signing in again starts with signing out, asked over Datastar as the
+  header's `Log out` is.
+  ```
   []
   (<page/> "Presenter"
            [:main {:id "stage"}
-            [:p "Your session is not valid. " [:a {:href "/"} "Sign in again"]]]))
+            [:p "Your session is not valid. "
+             [:button {:class "primary" :data-on:click (ds/get "/logout")}
+              "Sign in again"]]]))
 
 (defn ^activity
   "Event that marks the presenter as used at `ts`."
