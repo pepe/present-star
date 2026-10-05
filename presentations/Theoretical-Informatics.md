@@ -1047,3 +1047,1127 @@ Explain the difference between:
 Give one example of each.
 ---
 # Q&A
+===
+title: Deterministic and Nondeterministic Finite Automata
+author: Josef Pospíšil
+date: 2026-10-05
+---
+# Theoretical Informatics
+
+## Deterministic and Nondeterministic Finite Automata
+
+**EIEC4E / INFOAN1**
+
+How can a machine recognize a language?
+---
+# I work with a living language
+
+## Janet
+
+I actively build software in Janet.
+
+* member of the Janet GitHub organization
+* contributor to the Janet ecosystem
+* my own runtime and research work uses Janet
+
+So formal languages are not museum pieces.
+
+> They are part of how real programming languages live.
+---
+# Greek symbols 🏛️
+
+Some letters we will meet:
+
+```text
+Σ σ   sigma     SIG-muh
+ε     epsilon   EP-sih-lon
+δ     delta     DEL-tuh
+λ     lambda    LAM-duh
+Γ γ   gamma     GAM-uh
+Ω ω   omega     oh-MAY-guh
+```
+
+We will pronounce them in English.
+---
+# Math symbols 🏛️
+
+```text
+x ∈ A       x belongs to A
+x ∉ A       x does not belong to A
+
+A ⊆ B       A is a subset of B
+
+A × B       A cross B
+
+A → B       A maps / goes to B
+
+a ⇒ b       a derives b
+
+|w|         length of w
+
+{ ... }     a set
+
+|           such that
+```
+---
+# Last time
+
+```text
+Σ = {0, 1}
+```
+
+What is this?
+---
+# An alphabet
+
+```text
+Σ = {0, 1}
+```
+
+`Σ` is an **alphabet**.
+
+A finite set of available symbols.
+---
+# And this?
+
+```text
+101
+```
+---
+# A string
+
+```text
+101
+```
+
+is a **string** over:
+
+```text
+Σ = {0, 1}
+```
+
+A finite sequence of symbols.
+---
+# And this?
+
+```text
+L = { w ∈ {0,1}* | w ends in 01 }
+```
+
+Can you read it in English?
+---
+# A language
+
+```text
+L = { w ∈ {0,1}* | w ends in 01 }
+```
+
+> `L` is the set of all binary strings ending in `01`.
+
+Formally:
+
+```text
+L ⊆ Σ*
+```
+---
+# Last time
+
+We moved through:
+
+```text
+symbol
+   ↓
+alphabet
+   ↓
+string
+   ↓
+language
+```
+---
+# Grammar
+
+A grammar answers:
+
+> How can valid strings be generated?
+
+We wrote:
+
+```text
+G = (N, Σ, P, S)
+```
+
+and generated strings by applying production rules.
+---
+# Another question
+
+Suppose I give you:
+
+```text
+1101
+```
+
+Can a machine decide whether:
+
+```text
+1101 ∈ L
+```
+---
+# Generation vs recognition
+
+Grammar:
+
+> How can valid strings be generated?
+
+Recognizer:
+
+> Given a string, does it belong to the language?
+---
+# Our language again
+
+```text
+L = { w ∈ {0,1}* | w ends in 01 }
+```
+
+We want a machine that answers:
+
+```text
+1101  → yes
+1010  → no
+```
+---
+# Input arrives over time
+
+Imagine the machine receives:
+
+```text
+1 1 0 1
+```
+
+one symbol at a time.
+
+After every symbol it must decide:
+
+> What information should I remember?
+---
+# Do we need everything?
+
+After reading:
+
+```text
+1011010010
+```
+
+does the machine need to remember the whole string
+
+just to decide whether it eventually ends in:
+
+```text
+01
+```
+---
+# Probably not
+
+Most of the past no longer matters.
+
+We only need to preserve information that may affect the future decision.
+
+> A machine can forget irrelevant history.
+---
+# State
+
+A **state** represents information the machine currently remembers.
+
+Not necessarily everything that happened.
+
+Only what still matters.
+---
+# State as compressed history
+
+Think of a state as:
+
+> a summary of the past sufficient for deciding what to do next
+
+For our language:
+
+```text
+ends in 01
+```
+
+what summaries might be useful?
+---
+# What situations matter?
+
+Before drawing any circles:
+
+> What different situations does the machine need to distinguish?
+---
+# Three situations
+
+### q₀ Nothing useful currently ends the string.
+
+### q₁ The current string ends in:
+
+```text
+0
+```
+
+### q₂ The current string ends in:
+
+```text
+01
+```
+---
+# Why these states?
+
+We do **not** remember the whole input.
+
+We remember only:
+
+```text
+nothing useful
+```
+
+```text
+ends in 0
+```
+
+```text
+ends in 01
+```
+
+That is enough.
+---
+# Start at q₀
+
+Before reading anything:
+
+```text
+ε
+```
+
+we have not seen:
+
+```text
+0
+```
+
+```text
+01
+```
+
+So the machine begins in:
+
+```text
+q₀
+```
+---
+# From q₀
+
+We currently have:
+
+> nothing useful
+
+What should happen if the next symbol is:
+
+```text
+0
+```
+
+And what if it is:
+
+```text
+1
+```
+---
+# From q₀
+
+Read `0`:
+
+```text
+q₀ --0--> q₁
+```
+
+because we now end in `0`.
+
+Read `1`:
+
+```text
+q₀ --1--> q₀
+```
+
+Nothing useful for `01` has appeared.
+---
+# From q₁
+
+We currently end in:
+
+```text
+0
+```
+
+What happens after another:
+
+```text
+0
+```
+
+What happens after:
+
+```text
+1
+```
+---
+# From q₁
+
+Read `0`:
+
+```text
+q₁ --0--> q₁
+```
+
+The new `0` may itself begin a future `01`.
+
+Read `1`:
+
+```text
+q₁ --1--> q₂
+```
+
+Now we end in `01`.
+---
+# From q₂
+
+We currently end in:
+
+```text
+01
+```
+
+What happens if another symbol arrives?
+
+```text
+0
+```
+
+or:
+
+```text
+1
+```
+---
+# From q₂
+
+Read `0`:
+
+```text
+q₂ --0--> q₁
+```
+
+We now end in `0`.
+
+Read `1`:
+
+```text
+q₂ --1--> q₀
+```
+
+We no longer end in `0` or `01`.
+---
+# Our transitions
+
+```text
+q₀ --0--> q₁
+q₀ --1--> q₀
+
+q₁ --0--> q₁
+q₁ --1--> q₂
+
+q₂ --0--> q₁
+q₂ --1--> q₀
+```
+
+The machine is now completely described.
+---
+# Accepting state
+
+Which state means:
+
+> If the input ended now, the string would belong to `L`.
+---
+# q₂ is accepting
+
+```text
+q₂
+```
+
+means:
+
+> the input currently ends in `01`
+
+So:
+
+```text
+F = {q₂}
+```
+---
+# Accepting does not mean stop
+
+Suppose we enter:
+
+```text
+q₂
+```
+
+but another input symbol arrives.
+
+The machine continues.
+
+> Acceptance is decided only after the whole input is consumed.
+---
+# When does the machine accept?
+
+A string is accepted if:
+
+1. we start in the initial state
+2. read the whole string
+3. follow one transition for each symbol
+4. finish in an accepting state
+---
+# Deterministic
+
+Why is this machine **deterministic**?
+
+For every:
+
+```text
+current state
+```
+
+and every:
+
+```text
+input symbol
+```
+
+there is **exactly one** next state.
+---
+# Deterministic Finite Automaton
+
+A **DFA** is formally:
+
+```text
+M = (Q, Σ, δ, q₀, F)
+```
+
+Five components describe the whole machine.
+---
+# Q and Σ
+
+```text
+Q
+```
+
+is the finite set of states.
+
+For our machine:
+
+```text
+Q = {q₀, q₁, q₂}
+```
+
+And:
+
+```text
+Σ = {0, 1}
+```
+
+is the input alphabet.
+---
+# q₀ and F
+
+```text
+q₀ ∈ Q
+```
+
+is the initial state.
+
+And:
+
+```text
+F ⊆ Q
+```
+
+is the set of accepting states.
+
+For our machine:
+
+```text
+F = {q₂}
+```
+---
+# The transition function
+
+```text
+δ
+```
+
+describes how the state changes.
+
+Formally:
+
+```text
+δ : Q × Σ → Q
+```
+---
+# Read it in English
+
+```text
+δ : Q × Σ → Q
+```
+
+means:
+
+> Give `δ` a current state and one input symbol.
+
+> It gives you the next state.
+---
+# For example
+
+```text
+δ(q₁, 1) = q₂
+```
+
+Read:
+
+> If the machine is in `q₁` and reads `1`, the next state is `q₂`.
+---
+# Transition table
+
+The same machine:
+
+```text
+        0     1
+      -----------
+→ q₀ | q₁    q₀
+  q₁ | q₁    q₂
+* q₂ | q₁    q₀
+```
+
+`→` initial state
+
+`*` accepting state
+---
+# Same machine
+
+We can represent one automaton as:
+
+* a state diagram
+* a transition table
+* a transition function
+
+Different representations.
+
+Same mathematical object.
+---
+# The machine recognizes a language
+
+We write:
+
+```text
+L(M)
+```
+
+for the language accepted by machine `M`.
+
+Formally:
+
+```text
+L(M) = { w ∈ Σ* | M accepts w }
+```
+---
+# We closed the loop
+
+Lecture 1:
+
+```text
+language
+```
+
+Today:
+
+```text
+language
+   ↓
+machine
+```
+
+And the machine itself defines:
+
+```text
+L(M)
+```
+---
+# One rule made it deterministic
+
+For each:
+
+```text
+(state, symbol)
+```
+
+there was exactly:
+
+```text
+one next state
+```
+
+But must a machine always work this way?
+---
+# What if there are choices?
+
+Imagine that after reading one symbol the machine could say:
+
+> Maybe go here.
+
+> Or maybe go there.
+
+Now there may be several possible computations.
+---
+# Nondeterministic Finite Automaton
+
+An **NFA** may have:
+
+* no possible next state
+* one possible next state
+* several possible next states
+
+for the same state and input symbol.
+---
+# Which path does it choose?
+
+That is almost the wrong question.
+
+Conceptually, consider **all possible paths**.
+
+The NFA accepts if:
+
+> at least one possible path accepts.
+---
+# DFA vs NFA
+
+DFA:
+
+```text
+one current state
+```
+
+NFA:
+
+```text
+a set of possible current states
+```
+---
+# Formal difference
+
+For a DFA:
+
+```text
+δ : Q × Σ → Q
+```
+
+For an NFA:
+
+```text
+δ : Q × Σ → 𝒫(Q)
+```
+
+where:
+
+```text
+𝒫(Q)
+```
+
+means a set of possible states.
+---
+# More powerful?
+
+An NFA certainly *looks* more powerful.
+
+It can explore several possibilities at once.
+
+So does it recognize more languages?
+---
+# Surprisingly...
+
+No.
+
+> DFA and NFA recognize exactly the same class of languages.
+
+They differ in how they describe the computation,
+
+not in what languages they can recognize.
+---
+# Now become the machine
+
+## Workshop
+
+Enough new machinery.
+
+Let us run it.
+---
+# Our first machine
+
+Language:
+
+```text
+L = { w ∈ {0,1}* | w ends in 01 }
+```
+
+Three positions in the room:
+
+```text
+q₀   nothing useful
+
+q₁   ends in 0
+
+q₂   ends in 01
+```
+
+`q₂` is accepting.
+---
+# I am the current state
+
+I start at:
+
+```text
+q₀
+```
+
+You send me symbols:
+
+```text
+0
+```
+
+or:
+
+```text
+1
+```
+
+After every symbol, tell me where I must move.
+---
+# Run this
+
+```text
+01
+```
+---
+# Run this
+
+```text
+010
+```
+---
+# Run this
+
+```text
+1101
+```
+---
+# Run this
+
+```text
+01010
+```
+---
+# And this?
+
+```text
+ε
+```
+
+Do I move?
+
+Do we accept?
+---
+# Medal challenge 🏅
+
+Now one of you becomes the automaton.
+
+Start at:
+
+```text
+q₀
+```
+
+Process:
+
+```text
+1100101
+```
+
+The class sends the symbols.
+
+You move.
+---
+# Medal challenge 🏅
+## contd.
+
+At the end:
+
+> Are you accepting?
+
+And more importantly:
+
+> Why are you standing in this state?
+---
+# A different language
+
+Now let:
+
+```text
+L = {
+  w ∈ {0,1}*
+  |
+  w contains an even number of 1s
+}
+```
+
+We need another DFA.
+---
+# Do not draw yet
+
+First ask:
+
+> What information about the past must the machine remember?
+
+Do we need the whole input?
+---
+# What actually matters?
+
+Consider:
+
+```text
+0
+10
+101
+1011
+10110
+```
+
+What property must we keep track of?
+---
+# Only parity
+
+We only need to distinguish:
+
+```text
+even number of 1s so far
+```
+
+from:
+
+```text
+odd number of 1s so far
+```
+
+Two memories.
+
+Two states.
+---
+# Your task
+
+Build the automaton.
+
+Decide:
+
+1. What are the states?
+2. Which state is initial?
+3. Which state is accepting?
+4. What does `0` do?
+5. What does `1` do?
+---
+# Start state
+
+Before reading anything:
+
+```text
+ε
+```
+
+we have seen:
+
+```text
+0 ones
+```
+
+Is zero even or odd?
+---
+# Therefore
+
+We begin in:
+
+```text
+EVEN
+```
+
+And `EVEN` is also the accepting state.
+---
+# What does 0 do?
+
+If we have seen an even number of `1`s,
+
+and then read:
+
+```text
+0
+```
+
+does the number of `1`s change?
+---
+# 0 preserves the state
+
+```text
+EVEN --0--> EVEN
+
+ODD  --0--> ODD
+```
+
+Reading `0` does not change parity.
+---
+# What does 1 do?
+
+If we read another:
+
+```text
+1
+```
+
+what happens to parity?
+---
+# 1 toggles the state
+
+```text
+EVEN --1--> ODD
+
+ODD  --1--> EVEN
+```
+
+Every `1` switches parity.
+---
+# The whole machine
+
+```text
+            0      1
+         ------------
+→ * EVEN | EVEN   ODD
+    ODD  | ODD    EVEN
+```
+
+Only two states are necessary.
+---
+# Test it
+
+What happens with:
+
+```text
+ε
+```
+
+```text
+11
+```
+
+```text
+1010
+```
+
+```text
+111
+```
+---
+# Compare our two machines
+
+For:
+
+```text
+ends in 01
+```
+
+the state remembers:
+
+> relevant recent history
+---
+# Compare our two machines
+## contd.
+
+For:
+
+```text
+even number of 1s
+```
+
+the state remembers:
+
+> an accumulated property of the history
+---
+# What is a state?
+
+Not:
+
+> a circle with a name
+
+But:
+
+> the information about the past that still matters for the future
+---
+# Keep these ideas
+
+* language → set of strings
+* recognizer → decides membership
+* state → relevant memory
+* transition → update of that memory
+* DFA → exactly one next state
+* NFA → several possible next states
+* acceptance → after the complete input
+---
+# The larger picture
+
+```text
+formal language
+      ↓
+  recognizer
+      ↓
+finite automaton
+```
+
+Next we will discover another way to describe the same family of languages.
+---
+# Next: Regular Languages
+
+Machines are one description.
+
+Expressions are another.
+
+Soon we will connect:
+
+```text
+finite automata
+      ↕
+regular languages
+      ↕
+regular expressions
+```
+---
+# Exit question
+
+In your own words:
+
+> What does a state remember?
+
+And:
+
+> When exactly does a DFA accept a string?
+---
+# Q&A
