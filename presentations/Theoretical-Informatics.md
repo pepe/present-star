@@ -1094,19 +1094,12 @@ We will pronounce them in English.
 ```text
 x ∈ A       x belongs to A
 x ∉ A       x does not belong to A
-
 A ⊆ B       A is a subset of B
-
 A × B       A cross B
-
 A → B       A maps / goes to B
-
 a ⇒ b       a derives b
-
 |w|         length of w
-
 { ... }     a set
-
 |           such that
 ```
 ---
