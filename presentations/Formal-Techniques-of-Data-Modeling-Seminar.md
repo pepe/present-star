@@ -262,6 +262,9 @@ Course
 Enrollment
 ```
 
+---
+# Structure vs behaviour
+
 **Behaviour**
 
 ```text
@@ -269,6 +272,9 @@ Enrolling
 Grading
 Cancelling
 ```
+---
+# Structure vs behaviour
+
 
 Ask both:
 
