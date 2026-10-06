@@ -108,601 +108,267 @@ title: From a Story to a Data Model
 author: Josef Pospíšil
 date: 2026-09-29
 ---
-# Formal Techniques of Data Modelling
+# OPM Cheatsheet
 
-## Seminar 1
+## Object-Process Methodology
 
-**From a Story to a Data Model**
+For now, we need only a few ideas:
 
-Today we will model one small world in several ways.
+* **objects**
+* **processes**
+* **states**
+* **relationships**
+
+The goal:
+
+> describe the world before choosing a database model
 ---
-# What are seminars for?
+# Object
 
-Lectures give you:
+An **object** is something that exists.
 
-* concepts
-* formal tools
-* theory
-
-Seminars are where we:
-
-* use them
-* test them
-* break things
-* compare solutions
----
-# The semester journey
-
-```text
-real-world problem
-        ↓
-conceptual model
-        ↓
-relational model
-        ↓
-SQL database
-```
-
-And also:
----
-# The semester journey
-## contd.
-
-```text
-real-world problem
-        ↓
-conceptual model
-        ↓
-graph model
-        ↓
-Neo4j
-```
-
-> Same world. Different models.
----
-# Our small world
-
-Alice and Bob are students.
-
-Alice studies:
-
-* Database Systems
-* Theoretical Informatics
-
-Bob studies:
-
-* Database Systems
----
-# More facts
-
-Database Systems has the code:
-
-```text
-DB101
-```
-
-Theoretical Informatics has the code:
-
-```text
-TI201
-```
-
-Students may attend several courses.
-
-Courses may have several students.
----
-# More rules
-
-* every student has a unique student ID
-* every course has a unique course code
-* an enrollment belongs to a semester
-* an enrollment may contain a grade
-* a student cannot enroll in the same course twice in the same semester
----
-# Your turn
-
-Read the description again.
-
-Find:
-
-1. **things**
-2. **properties**
-3. **connections**
-4. **rules**
-
-Work in pairs.
----
-# Things
-
-Possible candidates:
+Examples:
 
 ```text
 Student
 Course
 Enrollment
+Invoice
+Book
+Reservation
 ```
 
-Are all three really "things"?
+In an OPM diagram:
 
-Or is one of them something else?
+> object = rectangle
 ---
-# Properties
+# Process
 
-Possible properties:
+A **process** changes something.
+
+Examples:
 
 ```text
-Student
-  id
-  name
-
-Course
-  code
-  title
+Enrolling
+Paying
+Booking
+Registering
+Shipping
 ```
+
+In an OPM diagram:
+
+> process = ellipse
 ---
-# Properties
-## contd.
+# A useful test
 
-```text
-Enrollment
-  semester
-  grade
-```
+Ask:
 
-Question:
+> Can it exist?
 
-> Why does `grade` belong to Enrollment rather than Student?
+Probably an **object**.
+
+Ask:
+
+> Does it create, destroy, or change something?
+
+Probably a **process**.
 ---
-# Connections
+# Objects have states
 
-A first sketch:
-
-```text
-Student --- Enrollment --- Course
-```
-
-Now ask:
-
-* what does each connection mean?
-* can there be more than one?
-* what information belongs to the connection?
----
-# Where does the grade belong?
-
-Suppose:
-
-```text
-Alice received B in DB101
-```
-
-Should we model this as:
-
-```text
-Student
-  name: Alice
-  grade: B
-```
----
-# Where does the grade belong?
-
-or as:
-
-```text
-Enrollment
-  student: Alice
-  course: DB101
-  grade: B
-```
-
-Why?
----
-# Model vs data
-
-Let us create some actual data.
-
-```text
-Students
-
-1042  Alice
-1077  Bob
-```
-
-Is this the model?
-
-Or an example of the model?
----
-# Courses
-
-```text
-Courses
-
-DB101  Database Systems
-TI201  Theoretical Informatics
-```
-
-This describes one current state.
----
-# Enrollments
-
-```text
-Enrollments
-
-1042  DB101  2026W  B
-1042  TI201  2026W  A
-1077  DB101  2026W  C
-```
-
-What is each column telling us?
----
-# Two different levels
-
-Schema:
-
-```text
-Student
-  id   : StudentID
-  name : String
-```
-
-Instance:
-
-```text
-1042  Alice
-1077  Bob
-```
----
-# Schema vs instance
-
-> Schema: what can exist
-
-> Instance: what exists now
-
-We will return to this distinction many times.
----
-# Relational model
-
-Let us represent the same world as relations.
-
-```text
-STUDENT(
-  StudentID,
-  Name
-)
-```
----
-# Relational model
-## contd.
-
-```text
-COURSE(
-  CourseCode,
-  Title
-)
-
-ENROLLMENT(
-  StudentID,
-  CourseCode,
-  Semester,
-  Grade
-)
-```
----
-# What must be unique?
-
-Think before answering.
-
-In `STUDENT`:
-
-```text
-StudentID
-```
-
-In `COURSE`:
-
-```text
-CourseCode
-```
-
-What about `ENROLLMENT`?
----
-# Enrollment uniqueness
-
-A student may attend the same course in different semesters.
-
-So this is not enough:
-
-```text
-StudentID + CourseCode
-```
-
-A better candidate is:
-
-```text
-StudentID + CourseCode + Semester
-```
----
-# Constraints
-
-Our model should reject invalid states.
+An object may exist in different **states**.
 
 For example:
 
-* duplicate Student IDs
-* duplicate Course Codes
-* enrollment for a missing student
-* enrollment for a missing course
-* invalid grade
----
-# Break the model
+```text
+Enrollment
+  pending
+  active
+  completed
+  cancelled
+```
 
-What is wrong here?
+A process may change one state into another.
+---
+# Transformation
+
+A process can:
+
+* create an object
+* destroy an object
+* change its state
+
+For example:
 
 ```text
-STUDENT
-
-1042  Alice
-1042  Bob
+Enrolling
+        ↓
+Enrollment
 ```
----
-# Break the model
 
-What is wrong here?
+`Enrolling` creates an `Enrollment`.
+---
+# State change
+
+Consider:
 
 ```text
-ENROLLMENT
+Enrollment
 
-1042  DB999  2026W  A
+pending → active
 ```
 
-Assume that `DB999` does not exist.
----
-# Break the model
-
-What is wrong here?
+What caused the change?
 
 ```text
-1042  DB101  2026W  B
-1042  DB101  2026W  A
+Confirming
 ```
----
-# Break the model
 
-What is wrong here?
+So we can think:
 
 ```text
-1042  DB101  2026W  Excellent
+pending Enrollment
+        ↓
+    Confirming
+        ↓
+active Enrollment
 ```
+---
+# Objects can be related
 
-Assume:
+Not everything is a process.
+
+Some relationships describe structure:
 
 ```text
-Grade = {A, B, C, D, E, F}
+Student — has — StudentID
+
+Course — has — CourseCode
+
+Course — is part of — Programme
 ```
+
+These relationships describe how things are connected.
 ---
-# Why constraints matter
+# Structure vs behaviour
 
-Structure tells us what can be represented.
+OPM combines two views.
 
-Constraints tell us:
-
-> Which representations are valid?
----
-# Same world as a graph
-
-Now represent the same information differently.
+**Structure**
 
 ```text
-(Alice) ---> (Database Systems)
+Student
+Course
+Enrollment
 ```
 
-But what should the connection mean?
----
-# A graph model
+**Behaviour**
 
 ```text
-(:Student)
-    |
-    | ENROLLED_IN
-    v
-(:Course)
+Enrolling
+Grading
+Cancelling
 ```
 
-Now the relationship itself has meaning.
----
-# Relationship properties
+Ask both:
 
-The relationship may contain:
-
-```text
-semester = 2026W
-grade    = B
-```
-
-So we can represent:
-
-```text
-Alice -[ENROLLED_IN]-> DB101
-```
----
-# Same information
-
-Relational:
-
-```text
-ENROLLMENT(
-  1042,
-  DB101,
-  2026W,
-  B
-)
-```
-
----
-# Same information
-## contd.
-
-Graph:
-
-```text
-(Alice)-[
-  ENROLLED_IN
-  semester: 2026W
-  grade: B
-]->(DB101)
-```
----
-# Compare
-
-Where is Enrollment in the relational model?
-
-Where is Enrollment in the graph model?
-
-What becomes explicit?
-
-What becomes implicit?
----
-# Compare
-## contd.
-
-Which model makes this easier to see?
-
-```text
-Alice is enrolled in DB101
-```
-
-Which model makes tabular data easier to inspect?
----
-# Same world. Different model.
-
-The university did not change.
-
-The students did not change.
-
-The courses did not change.
-
-Our **representation** changed.
----
-# One question, two languages
-
-Suppose we ask:
-
-> Which courses does Alice attend?
-
-In SQL:
----
-# SQL preview
-
-```sql
-SELECT c.Title
-FROM STUDENT s
-JOIN ENROLLMENT e
-  ON e.StudentID = s.StudentID
-JOIN COURSE c
-  ON c.CourseCode = e.CourseCode
-WHERE s.Name = 'Alice';
-```
-
-Do not worry about the syntax yet.
-
-What structure can you recognize?
----
-# Cypher preview
-
-The same question in Cypher:
-
-```cypher
-MATCH (:Student {name: 'Alice'})
-      -[:ENROLLED_IN]->
-      (c:Course)
-RETURN c.title;
-```
-
-What structure can you recognize here?
----
-# Compare the questions
-
-SQL describes the path through:
-
-* tables
-* matching values
-* joins
-
----
-# Compare the questions
-## contd.
-Cypher describes the path through:
-
-* nodes
-* relationships
-* patterns
-
-Same question.
-
-Different model.
----
-# Your project will do this
-
-A practical domain will eventually be modelled as:
-
-```text
-relational database
-```
+> What exists?
 
 and:
 
+> What happens?
+---
+# Our university example
+
+Objects:
+
 ```text
-graph database
+Student
+Course
+Enrollment
 ```
 
-The important part is not choosing a favourite.
+Process:
 
-It is understanding the consequences of each model.
+```text
+Enrolling
+```
+
+A possible story:
+
+```text
+Student
+   \
+    Enrolling → Enrollment
+   /
+Course
+```
 ---
-# Think of a domain
+# Say it as a sentence
 
-Choose something you understand.
+A good model should also make sense in ordinary language.
 
 For example:
 
-* library
-* hotel
-* music festival
-* football club
-* online shop
-* cinema
-* public transport
+> Enrolling yields Enrollment.
+
+> Enrollment relates a Student to a Course.
+
+If you cannot explain the diagram as a sentence:
+
+**the model probably needs more thought.**
 ---
-# A good project domain
+# Start your project
 
-It should contain:
+Do not begin with tables.
 
-* several kinds of things
-* meaningful relationships
-* some constraints
-* questions worth asking
-* enough complexity to compare models
+Begin with the world.
 
-But not an entire universe.
+Write down:
+
+1. important **objects**
+2. important **processes**
+3. important **states**
+4. important **relationships**
 ---
-# Preparation
+# Ask these questions
 
-For your candidate domain, prepare:
+For every object:
 
-1. 5–10 sentences describing it
-2. at least 3 kinds of things
-3. at least 2 relationships
-4. at least 3 rules or constraints
-5. 3 questions the database should answer
+> What is it?
+
+> What states can it have?
+
+For every process:
+
+> What does it change?
+
+> What does it require?
+
+> What does it create?
 ---
-# Before you leave
+# Keep it small
 
-Can you explain the difference between:
+Your first model does **not** need everything.
 
-* world and representation
-* schema and instance
-* structure and constraint
-* relational and graph representation
+Start with:
 
-If yes, today worked.
+* 3–6 important objects
+* 2–4 important processes
+* only meaningful states
+* only important relationships
+
+Then refine it.
 ---
-# Q&A
+# Today
+
+For your project domain:
+
+1. describe the world in a few sentences
+2. draw the first OPM model
+3. identify objects and processes
+4. add states where useful
+5. explain the model to another person
+
+> Model the world first.  
+> Choose the database representation later.
