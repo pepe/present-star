@@ -1,6 +1,6 @@
-title: Frontend Development
+title: Day 1 Tools
 author: Josef Pospíšil
-date: 2026-09-28
+date: 2026-10-12
 ---
 # Frontend Development
 From an empty folder to a living application.
@@ -638,6 +638,10 @@ By the end of today you should be able to:
 ---
 # Day 1 is not about HTML
 It is about **working like a developer**.
+===
+title: Day 2 Content
+author: Josef Pospíšil
+date: 2026-10-13
 ---
 # Day 2
 ## Content & Representation
@@ -894,6 +898,10 @@ Create a page with:
 ---
 # One important restriction
 Try to do as much as possible **without JavaScript**.
+===
+title: Day 3 - Functionality
+author: Josef Pospíšil
+date: 2026-10-14
 ---
 # Day 3
 ## Functionality
@@ -1148,6 +1156,10 @@ Extend your page so it can:
 * modify the DOM
 * fetch data
 * communicate with a server
+===
+title: Day 4 The Project
+author: Josef Pospíšil
+date: 2026-10-14
 ---
 # Day 4
 ## The Project
@@ -1226,6 +1238,10 @@ But ask it questions you can evaluate.
 The project is yours.
 
 So is the responsibility for understanding it.
+===
+title: Day 5 The Show
+author: Josef Pospíšil
+date: 2026-10-15
 ---
 # Day 5
 ## The Show
