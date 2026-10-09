@@ -213,6 +213,8 @@ button.primary {
 }
 .lectern > textarea.note {
   aspect-ratio: 16 / 9;
+  font-size: 1.5rem;
+  line-height: 1.45;
 }
 
 .side {
