@@ -2,6 +2,25 @@
 
 (setdyn *rpc-defines* [:view])
 
+(defn- socket/steps
+  ```
+  Steps that make the Unix socket directories under `root`, or refuse.
+
+  The RPC directory is the deploy user's alone, and made here. The HTTP
+  directory is where nginx connects, so its group is nginx and every
+  socket made in it inherits that group. Only root can give it the
+  group, so it is made once by hand, and under /srv/run it outlives a
+  reboot; here it is only checked:
+
+      doas install -d -o deploy -g nginx -m 2750 <root>/http
+  ```
+  [root]
+  (def rpc (path/posix/join root "rpc"))
+  (def http (path/posix/join root "http"))
+  [[:mkdir :-p rpc]
+   [:chmod "700" rpc]
+   [(string "test \"$(stat -c %U:%G:%a " http ")\" = deploy:nginx:2750")]])
+
 (define-effect Bootstrap
   ```
   Event that bootstraps the remote site.
@@ -10,15 +29,27 @@
   one starts, so what the bootstrap creates and what the thicket later
   writes is the deploy user's alone: the checkout with its configuration,
   the releases, the store and the log. nginx only proxies to the thicket's
-  ports.
+  doors. With a `:socket-root` the doors are Unix sockets in its `http`
+  directory, whose group is nginx's, and the RPC sockets are in its `rpc`
+  directory, the deploy user's alone.
   ```
   [_ {:host host :env env :repo repo :janet-source janet-source
+      :socket-root socket-root
       :build-path bp :data-path dp :release-path rp} _]
   (let [rbp (path/posix/join "/" ;(butlast (path/parts bp)))
         sbp (path/posix/join rbp "spork")
         conf (jdn/render compile-config)
         conf-path (path/posix/join bp "conf.jdn")
         activate [". ./prod/bin/activate"]]
+    # Before anything is removed: a thicket whose sockets have nowhere to
+    # go would come up with every peer refused.
+    (when socket-root
+      (eprin "------------ Ensure socket directories in " socket-root)
+      (assert (zero? (exec ;(ssh-cmds host [:umask "077"]
+                                      ;(socket/steps socket-root))))
+              (string "socket directories are not ready in " socket-root
+                      "; the HTTP one needs root once, see socket/steps"))
+      (eprint " done"))
     (eprin "------------ Ensure paths")
     (exec
       ;(ssh-cmds host

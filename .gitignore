@@ -14,3 +14,5 @@ test/data
 *.lock
 _build
 _release
+# Working notes of what was done on the box, never committed
+HANDOVER.md
