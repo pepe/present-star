@@ -3,17 +3,19 @@
 present-star lives on the pan.earth box (Alpine, 89.167.63.115) beside
 interstudy, metabolon and pacts:
 
-| Name | Door | Port on the box |
+| Name | Door | Where on the box |
 |---|---|---|
-| `decks.pan.earth` | the lecturer: presenter, held by presenter/sentry | 7880 |
-| `show.pan.earth` | the students: watcher | 7881 |
-| mycelium | demiurge, tree, decker, presenter, presenter/sentry, watcher, relay, recorder | 4843–4850 |
+| `decks.pan.earth` | the lecturer: presenter, held by presenter/sentry | `/srv/run/present-star/http/presenter.sock` |
+| `show.pan.earth` | the students: watcher | `/srv/run/present-star/http/watcher.sock` |
+| mycelium | demiurge, tree, decker, presenter, presenter/sentry, watcher, relay, recorder | `/srv/run/present-star/rpc/<name>.sock` |
 | relay | other thickets, by their public keys | 4851, open |
 
-Everything but the relay listens on localhost, and nginx is the only way in.
-The relay listens on `0.0.0.0:4851` itself: it speaks RPC, not HTTP, is
-encrypted by its own handshake, and admits only the public keys in its
-`:followers`. The config with the real secrets is
+Everything but the relay is a Unix socket under the config's
+`:socket-root`, `/srv/run/present-star`, and nginx is the only way in: the
+doors are in `http/`, whose group is nginx, the RPC sockets in `rpc/`, the
+deploy user's alone. The relay listens on `0.0.0.0:4851` itself: it speaks
+RPC, not HTTP, is encrypted by its own handshake, and admits only the
+public keys in its `:followers`. The config with the real secrets is
 `conf.show.pan.earth.jdn`, gitignored.
 
 The box is reached through the `pe` alias of `~/.ssh/config` (pan.earth,
@@ -32,11 +34,15 @@ which `pe` has through `doas`.
    box is ready for a wildcard: `00-default.conf` answers any name without
    a site of its own with 404, and refuses the TLS handshake. Names with
    records of their own, `interstudy.pan.earth` and the rest, keep them.
-3. **Free ports.** Nothing may listen where present-star will:
+3. **The socket directories.** The bootstrap makes `rpc/` itself and
+   only checks `http/`, which needs root once to get nginx's group; under
+   `/srv/run` both outlive a reboot:
    ```
-   ssh pe "netstat -ltn | grep -E ':(484[3-8]|788[01]) '"
+   ssh pe "install -d -m 0711 /srv/run/present-star &&
+           doas install -d -o deploy -g nginx -m 2750 /srv/run/present-star/http"
    ```
-   must print nothing.
+   And the relay's port must be free: `ssh pe "netstat -ltn | grep ':4851 '"`
+   prints nothing.
 
 ## 1. Bootstrap
 
@@ -79,8 +85,9 @@ ssh deploy@pe tail -n 30 /srv/data/present-star/demiurge.log
 One file a name, as the box keeps them:
 [`decks.pan.earth.conf`](deploy/nginx/decks.pan.earth.conf) and
 [`show.pan.earth.conf`](deploy/nginx/show.pan.earth.conf). Each sends its
-name to its door on `[::1]`, and keeps the live slide's stream unbuffered
-and open for a whole lecture.
+name to its door's socket in `/srv/run/present-star/http`, and keeps the
+live slide's stream unbuffered and open for a whole lecture. Switch nginx
+to the sockets only after a release, when both exist.
 
 The lecturer's door is also limited. The sentry takes a POST to any path it
 does not route as a sign-in, so nginx refuses every POST but `/`, where the
@@ -110,6 +117,11 @@ ssh -t pe "doas certbot --nginx -d show.pan.earth"
 ```
 
 `/etc/periodic/daily/do-certbot` renews them with the rest.
+
+Then HTTP/2, by hand in each file on the box: `http2 on;` on the line
+after certbot's `listen [::]:443 ssl; # managed by Certbot`, `nginx -t`,
+and a reload. Over HTTP/1.1 a browser keeps six connections to a host, and
+every open stream holds one.
 
 The session cookie is `Secure`, so the presenter can be signed in to only
 over HTTPS.
@@ -161,9 +173,9 @@ knows no `@reboot`, which is why this is not a crontab.
   so: `scp` it as `deploy@pe:/srv/src/present-star/conf.jdn` →
   `dm stop-peers` → `dm stop` → start the demiurge as `deploy/crontab` does
   → `dm release` → `dm run-peers`.
-- **Stopping.** `dm stop-peers`, then `dm stop`, until nothing listens on
-  4843: `netstat -ltn | grep -c ':4843 '`. Bootstrapping again does not stop
-  an old demiurge, so stop first.
+- **Stopping.** `dm stop-peers`, then `dm stop`, until no process runs
+  from `/srv/exe/present-star` or `/srv/src/present-star/prod/bin/janet`.
+  Bootstrapping again does not stop an old demiurge, so stop first.
 - **The log** is `/srv/data/present-star/demiurge.log`.
 - **Sessions** live in the tree's memory: restarting the tree signs the
   lecturer out. The decks, where the stage stands and the notes are in its
