@@ -131,6 +131,9 @@
   The staged slide, what comes after it, its note, and the controls. The
   students see the slide only once it is presented; until then, only the
   deck's title.
+
+  The lecturer knows the slide and reads the note, so the note takes the
+  room, and the slide stands beside it with everything else.
   ```
   [id deck stage err watcher held]
   (def n (stage :slide))
@@ -138,9 +141,10 @@
   (def total (length (deck :slides)))
   (def part (or (section/at deck n) {}))
   (def parted (> (length (get deck :sections [])) 1))
-  [:div {:class "on-stage"}
-   (<slide/> (slide/at deck n))
+  [:div {:class "on-stage lectern"}
+   (<note/> id n (get-in held [:slides n]) total)
    [:aside {:class "side"}
+    (<slide/> (slide/at deck n))
     (if shown
       [:p {:class "state presenting"} "Presenting · the students follow"]
       [:p {:class "state"} "Staged · the students see only the title"])
@@ -157,8 +161,6 @@
        (<go/> "Stop" "stop")
        [:button {:class "primary" :onclick "go(\"present\")"} "Present"])
      (unless shown (<go/> "Close" "close"))]
-    [:h3 "Notes"]
-    (<note/> id n (get-in held [:slides n]) total)
     [:h3 "Next"]
     (if-let [upcoming (slide/at deck (inc n))]
       (<slide/> upcoming "preview")

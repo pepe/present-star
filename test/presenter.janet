@@ -83,11 +83,12 @@
         "The podium's stream starts with what is on now")
 (let [m (sse/mark live)]
   (assert (= 204 ((go `{"move":"stage","deck":"intro"}`) :status)) "Staging is accepted")
-  (def sent (sse/until live m [`<h1>One</h1>` `Staged` `1 / 2` `Present` `Close`
-                               `Notes` `data-ignore-morph` `Next` `<h2>Two</h2>`
+  (def sent (sse/until live m [`class="on-stage lectern"` `data-ignore-morph`
+                               `<h1>One</h1>` `Staged` `1 / 2` `Present` `Close`
+                               `Next` `<h2>Two</h2>`
                                `Students follow at` `http://localhost:8881`
                                `On the stage` `The Intro`]))
-  (assert sent "and the podium shows the slide, its note, the next one, and where students follow")
+  (assert sent "and the podium shows the note, beside it the slide, the next one, and where students follow")
   (assert-not (string/find "draft.md" sent) "The other decks are put away meanwhile")
   (assert (string/find "Ctrl+← and Ctrl+→ move through the deck" sent)
           "The note says how to move on from it")
@@ -124,7 +125,7 @@
   (:save-presentation tree "intro"
                       @{:title "The Intro" :date "2026-02-23" :modified 2000000000
                         :slides @[[:section [:h1 "One"]]]})
-  (assert (sse/until live m [`1 / 1` `Say hello first</textarea>` `Notes whose slide is gone`
+  (assert (sse/until live m [`Say hello first</textarea>` `1 / 1` `Notes whose slide is gone`
                              `Was on slide 2` `Two goes soon` `Put on this slide`])
           "A note whose slide was taken out is kept aside, to be put somewhere"))
 (let [orphan (get-in (:notes tree) ["intro" :orphans 0 :id])
