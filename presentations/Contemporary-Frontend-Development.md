@@ -1159,7 +1159,7 @@ Extend your page so it can:
 ===
 title: Day 4 The Project
 author: Josef Pospíšil
-date: 2026-10-15
+date: 2026-10-22
 ---
 # Day 4
 ## The Project
@@ -1241,7 +1241,7 @@ So is the responsibility for understanding it.
 ===
 title: Day 5 The Show
 author: Josef Pospíšil
-date: 2026-10-15
+date: 2026-10-23
 ---
 # Day 5
 ## The Show
