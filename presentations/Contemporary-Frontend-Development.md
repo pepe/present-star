@@ -280,6 +280,8 @@ edit → serve → open → inspect
 Sooner or later you will say:
 
 > It worked yesterday.
+
+Install it: [git-scm.com/downloads](https://git-scm.com/downloads)
 ---
 # Git remembers
 Git records the history of a project.
