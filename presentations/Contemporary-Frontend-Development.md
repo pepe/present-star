@@ -4,6 +4,8 @@ date: 2026-10-12
 ---
 # Frontend Development
 From an empty folder to a living application.
+
+Course materials: [github.com/pepe/culs-frontend-2026](https://github.com/pepe/culs-frontend-2026)
 ---
 # Five days
 1. **Tools** — how do I work?
