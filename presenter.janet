@@ -142,9 +142,9 @@
   (def part (or (section/at deck n) {}))
   (def parted (> (length (get deck :sections [])) 1))
   [:div {:class "on-stage lectern"}
-   (<note/> id n (get-in held [:slides n]) total)
+   (<slide/> (slide/at deck n))
    [:aside {:class "side"}
-    (<slide/> (slide/at deck n))
+    (<note/> id n (get-in held [:slides n]) total)
     (if shown
       [:p {:class "state presenting"} "Presenting · the students follow"]
       [:p {:class "state"} "Staged · the students see only the title"])
