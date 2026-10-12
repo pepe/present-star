@@ -674,9 +674,10 @@ Structure and meaning.
 # An element has structure
 ```text
 <p>Hello, world!</p>
-│ │             │
-│ content       │
-opening       closing
+└┬┘└─────┬─────┘└┬─┘
+ │       │       └─ closing tag
+ │       └───────── content
+ └───────────────── opening tag
 ```
 ---
 # Attributes
@@ -704,12 +705,12 @@ html
     └── footer
 ```
 ---
-# The DOM
+# The DOM 🔎
 The browser turns HTML into a structure it can work with.
 
 The **Document Object Model**.
 ---
-# Semantics
+# Semantics 💬
 Ask:
 
 > What is this thing?
@@ -722,7 +723,7 @@ Ask:
 * a link?
 * a form?
 ---
-# A button is not a `div`
+# A button is not a `div` 🎬
 ```html
 <button>Save</button>
 ```
@@ -734,7 +735,7 @@ Use the platform before rebuilding the platform.
 # Accessibility
 Not everyone interacts with your page in the same way.
 ---
-# A user may...
+# A user may... 🧪
 * use a keyboard
 * use a screen reader
 * zoom the page
@@ -742,7 +743,7 @@ Not everyone interacts with your page in the same way.
 * use a small screen
 * have a temporary injury
 ---
-# Accessibility starts with HTML
+# Accessibility starts with HTML 🔎
 Good structure gives browsers and assistive technology useful information.
 ---
 # HTML has relatives
@@ -768,14 +769,14 @@ You define what elements mean.
 # SVG
 SVG is structured text describing graphics.
 ---
-# SVG
+# SVG 🧪
 ```html
 <svg viewBox="0 0 100 100">
   <circle cx="50" cy="50" r="40" />
 </svg>
 ```
 ---
-# A picture you can inspect
+# A picture you can inspect 🔎
 An SVG can be:
 * viewed
 * styled
@@ -786,7 +787,7 @@ An SVG can be:
 # Documents are not always enough
 Sometimes we want **data**, not a ready-made document.
 ---
-# JSON
+# JSON 🔎
 ```json
 {
   "name": "Ada",
@@ -797,7 +798,7 @@ Sometimes we want **data**, not a ready-made document.
 # JSON describes data
 Objects, arrays, numbers, strings, booleans and `null`.
 ---
-# Same information, different representation
+# Same information, different representation 💬
 HTML:
 ```html
 <h2>Ada</h2>
@@ -834,10 +835,10 @@ article { }
 #menu { }
 ```
 ---
-# The cascade
+# The cascade 💬
 What happens when several rules apply to the same element?
 ---
-# CSS is negotiation
+# CSS is negotiation 🔎
 The browser combines:
 * inherited values
 * browser defaults
@@ -848,7 +849,7 @@ The browser combines:
 # The box model
 Every element occupies space.
 ---
-# The box
+# The box 🔎
 ```text
 margin
   border
@@ -864,13 +865,13 @@ Most modern page layout can be handled with:
 # Flexbox
 Useful when arranging things mostly along one dimension.
 ---
-# Grid
+# Grid 🎬
 Useful when rows and columns matter together.
 ---
 # Responsive design
 The Web is not one fixed canvas.
 ---
-# Constraints change
+# Constraints change 🔎
 Your page may appear on:
 * a phone
 * a laptop
@@ -890,7 +891,7 @@ But:
 # CSS is constraint solving
 Not pixel painting.
 ---
-# Day 2 goal
+# Day 2 goal 🧪
 Create a page with:
 * semantic HTML
 * clear structure
@@ -899,6 +900,8 @@ Create a page with:
 * CSS layout
 * responsive behaviour
 * basic accessibility
+
+Images and video are welcome too.
 ---
 # One important restriction
 Try to do as much as possible **without JavaScript**.
