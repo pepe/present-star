@@ -2164,3 +2164,984 @@ And:
 > When exactly does a DFA accept a string?
 ---
 # Q&A
+===
+
+title: Mealy and Moore Machines
+author: Josef Pospíšil
+date: 2026-10-13
+---
+
+# Theoretical Informatics
+## Mealy and Moore Machines
+
+EIEC4E / INFOAN1
+
+From recognizing strings to producing output.
+
+---
+
+# First, a question
+
+What does a state represent?
+
+And why does a machine need one?
+
+---
+
+# A state remembers
+
+**The information about the past that matters for the future.**
+
+Not necessarily the whole past.
+
+Only what is needed to decide what happens next.
+
+---
+
+# Last time
+
+## DFA
+
+Exactly one next state for every state and input symbol.
+
+## NFA
+
+Possibly several next states.
+
+Both recognize languages.
+
+---
+
+# Our old friend
+
+Σ = {0, 1}
+
+L = {w ∈ Σ* | w ends in 01}
+
+Remember the three states?
+
+---
+
+# Our old friend
+## contd.
+
+- q₀ — no useful suffix
+- q₁ — ends in `0`
+- q₂ — ends in `01`
+
+What was the purpose of q₂?
+
+---
+
+# The DFA we built
+
+```
+State | Input 0 | Input 1
+------+---------+--------
+q₀    | q₁      | q₀
+q₁    | q₁      | q₂
+q₂    | q₁      | q₀
+```
+
+Initial state: q₀
+
+Accepting state: q₂
+
+---
+
+# A little puzzle
+
+Our DFA reads:
+
+`011`
+
+Did it encounter `01`?
+
+Does it accept the string?
+
+Are those the same question?
+
+---
+
+# Not quite
+
+`011`
+
+```
+q₀ --0--> q₁ --1--> q₂ --1--> q₀
+```
+
+It encountered `01`.
+
+But the final state is q₀.
+
+**The DFA rejects.**
+
+---
+
+# A different problem
+
+What if we want the machine to signal whenever it encounters `01`?
+
+Not just at the end.
+
+While it is reading the input!
+
+---
+
+# Input and output
+
+For example:
+
+```
+Input:   0 1 1
+Output:  0 1 0
+```
+
+Every `1` in the output means:
+
+**We have just detected `01`.**
+
+Can a finite-state machine do that?
+
+---
+
+# A transducer
+
+A machine that produces output while processing input.
+
+```
+       input
+         |
+         v
+   +-------------+
+   |   Machine   |
+   +-------------+
+         |
+         v
+       output
+```
+
+A **finite-state transducer**.
+
+---
+
+# Where might we use one?
+
+- A door controller reacting to credentials
+- A vending machine responding to coins
+- A network protocol producing replies
+
+Not just accepting or rejecting.
+
+**Producing behaviour.**
+
+---
+
+# Let's build one
+
+We want to detect every occurrence of:
+
+`01`
+
+What information about the past must we remember?
+
+Think before drawing.
+
+---
+
+# Two states might be enough
+
+- q₀ — the last symbol was not `0`, or there was no input yet
+- q₁ — the last symbol was `0`
+
+Why don't we need a third state?
+
+---
+
+# Meet the Mealy machine
+
+A transition determines two things:
+
+1. The next state
+2. The output
+
+```
+current state + input
+          |
+          v
+   next state + output
+```
+
+**Output belongs to the transition.**
+
+---
+
+# A new arrow notation
+
+```
+q₀ --0/0--> q₁
+```
+
+Read it as:
+
+- We are in q₀
+- We read `0`
+- We produce `0`
+- We move to q₁
+
+---
+
+# A new arrow notation
+## contd.
+
+The label on the arrow is:
+
+**input / output**
+
+```
+q₀ --0/0--> q₁
+      ^
+      |
+  input/output
+```
+
+The first symbol is consumed.
+
+The second is produced.
+
+---
+
+# Your turn
+
+We are in q₁.
+
+The next input is `1`.
+
+What happens?
+
+```
+q₁ --1/?--> ?
+```
+
+Remember what q₁ means.
+
+---
+
+# The important transition
+
+```
+q₁ --1/1--> q₀
+```
+
+We have detected `01`!
+
+Emit `1`.
+
+The new input ends in `1`, so return to q₀.
+
+---
+
+# Our first Mealy machine
+
+```
+State | Input 0  | Input 1
+------+----------+----------
+q₀    | q₁ / 0   | q₀ / 0
+q₁    | q₁ / 0   | q₀ / 1
+```
+
+Each entry means:
+
+**next state / output**
+
+Initial state: q₀
+
+---
+
+# The complete machine
+
+```
+q₀ --0/0--> q₁
+q₀ --1/0--> q₀
+
+q₁ --0/0--> q₁
+q₁ --1/1--> q₀
+```
+
+Notice:
+
+There are no accepting states here.
+
+We are producing output, not deciding membership.
+
+---
+
+# Run the machine
+
+Input:
+
+`001011`
+
+What output does our Mealy machine produce?
+
+And where does it finish?
+
+---
+
+# Run the machine
+## contd.
+
+```
+Input:   0 0 1 0 1 1
+Output:  0 0 1 0 1 0
+```
+
+Final state: q₀
+
+We detected `01` twice.
+
+The output is `001010`.
+
+---
+
+# Why only two states?
+
+We do not need a separate state meaning:
+
+"I just detected 01."
+
+The output `1` already reports that event.
+
+We only need to remember:
+
+**Was the previous symbol `0`?**
+
+---
+
+# Another approach
+
+What if output didn't belong to transitions?
+
+What if each state had its own output?
+
+Remember our original three-state DFA?
+
+---
+
+# Meet the Moore machine
+
+Every state has an output.
+
+```
+q₀ / 0
+q₁ / 0
+q₂ / 1
+```
+
+And the output depends on the current state.
+
+**Output belongs to the state.**
+
+---
+
+# Our Moore machine
+
+```
+State | Output | Input 0 | Input 1
+------+--------+---------+--------
+q₀    |   0    | q₁      | q₀
+q₁    |   0    | q₁      | q₂
+q₂    |   1    | q₁      | q₀
+```
+
+Initial state: q₀
+
+Do you recognize the transitions?
+
+---
+
+# A familiar machine!
+
+This is our old DFA for strings ending in `01`.
+
+But now:
+
+- q₂ is not an accepting state
+- q₂ has output `1`
+- Every state has an output
+
+**Same state transitions. Different purpose.**
+
+---
+
+# Run the Moore machine
+
+Again:
+
+`001011`
+
+Which states will we visit?
+
+When will the machine produce `1`?
+
+---
+
+# Run the Moore machine
+## contd.
+
+```
+Input:      0    0    1    0    1    1
+
+States:
+q₀ --> q₁ --> q₁ --> q₂ --> q₁ --> q₂ --> q₀
+
+Output:     0    0    1    0    1    0
+```
+
+After each symbol, we observe the output of the new state.
+
+---
+
+# A small timing detail
+
+A Mealy machine produces output **on each transition**.
+
+A Moore machine has an output **in every state**.
+
+That includes its initial state, before any input!
+
+---
+
+# A small timing detail
+## contd.
+
+For our example:
+
+```
+Mealy:   0 0 1 0 1 0
+
+Moore: 0 0 0 1 0 1 0
+       ^
+       |
+  initial output
+```
+
+When comparing machines, we must agree **when** outputs are observed.
+
+---
+
+# Mealy vs Moore
+
+```
+Property    | Mealy        | Moore
+------------+--------------+-----------
+Output on   | Transitions  | States
+Depends on  | State+input  | State
+Our example | 2 states     | 3 states
+```
+
+Both are finite-state transducers.
+
+---
+
+# Mealy vs Moore
+## contd.
+
+**Mealy**
+
+Output is determined when a transition happens.
+
+**Moore**
+
+Output is determined by the state we are in.
+
+They can express equivalent input/output behaviour, with suitable handling of timing.
+
+---
+
+# Why different numbers of states?
+
+In our Mealy machine:
+
+**Detecting `01` is an event on an arrow.**
+
+In our Moore machine:
+
+**Having just detected `01` is a state.**
+
+Different representations of the same useful behaviour.
+
+---
+
+# Now the mathematics 🏛️
+
+Both machines can be described as:
+
+M = (Q, Σ, Γ, δ, ω, q₀)
+
+Where:
+
+- Q — finite set of states
+- Σ — input alphabet
+- Γ — output alphabet
+
+---
+
+# Now the mathematics 🏛️
+## contd.
+
+The remaining components:
+
+- δ — transition function
+- ω — output function
+- q₀ — initial state
+
+We already know δ and q₀ from DFA.
+
+Only the output function is new.
+
+---
+
+# Mealy: two functions 🏛️
+
+Transition function:
+
+δ: Q × Σ → Q
+
+Output function:
+
+ω: Q × Σ → Γ
+
+Both receive:
+
+**current state + input symbol**
+
+---
+
+# Mealy: two functions 🏛️
+## contd.
+
+The transition function answers:
+
+**Where do we go?**
+
+The output function answers:
+
+**What do we produce?**
+
+For example:
+
+δ(q₁, 1) = q₀
+
+ω(q₁, 1) = 1
+
+---
+
+# Moore: one difference 🏛️
+
+Transition function:
+
+δ: Q × Σ → Q
+
+Output function:
+
+ω: Q → Γ
+
+The output function only needs the state.
+
+That is the whole conceptual difference!
+
+---
+
+# Moore: one difference 🏛️
+## contd.
+
+For our `01` detector:
+
+ω(q₀) = 0
+
+ω(q₁) = 0
+
+ω(q₂) = 1
+
+Every state has exactly one output.
+
+---
+
+# One more distinction
+
+Our old DFA had:
+
+F ⊆ Q
+
+The set of accepting states.
+
+Our transducer definitions do not need F.
+
+Their purpose is different:
+
+**Recognizers decide membership.**
+
+**Transducers produce output.**
+
+---
+
+# Now become the machine 🎬
+## Workshop
+
+We will use the same `01` detector.
+
+First as a Mealy machine.
+
+Then as a Moore machine.
+
+Let's see whether we can feel the difference.
+
+---
+
+# Human Mealy machine 🎬
+
+Two positions in the room:
+
+```
+q₀ — previous symbol is not 0
+
+q₁ — previous symbol is 0
+```
+
+One person is the **current state**.
+
+Another person announces the **output**.
+
+---
+
+# Human Mealy machine 🎬
+## contd.
+
+The class provides the input.
+
+At each symbol:
+
+1. Determine the transition
+2. Announce the output
+3. Move to the next state
+
+Remember:
+
+**The output is on the arrow.**
+
+---
+
+# Feed the machine
+
+Try:
+
+`01`
+
+`011`
+
+`00101`
+
+`111`
+
+After every symbol:
+
+- Where are we now?
+- What did we output?
+
+---
+
+# We need volunteers 🏅
+
+Two students.
+
+One moves.
+
+One announces the output.
+
+You can consult the transition table.
+
+**A good explanation matters more than speed.**
+
+Medal opportunity!
+
+---
+
+# Human Moore machine 🎬
+
+Now we need three positions:
+
+```
+q₀ : output 0
+
+q₁ : output 0
+
+q₂ : output 1
+```
+
+Each position has its own output.
+
+---
+
+# Human Moore machine 🎬
+## contd.
+
+The announcer no longer reads the arrow's output.
+
+Instead, the announcer reads the output of the **current state**.
+
+Even the initial state has an output.
+
+---
+
+# Try the same input
+
+`001011`
+
+First run it as Mealy.
+
+Then as Moore.
+
+Compare the outputs after each input symbol.
+
+What changed?
+
+What stayed the same?
+
+---
+
+# A little challenge
+
+The machine processes:
+
+`101001`
+
+Predict the output.
+
+First without moving.
+
+Then let our human machine verify it.
+
+---
+
+# A little challenge
+## Answer
+
+```
+Input:   1 0 1 0 0 1
+Output:  0 0 1 0 0 1
+```
+
+One occurrence of `01` after the third symbol.
+
+Another after the sixth.
+
+The machine does not need to store the full input.
+
+---
+
+# Find the bug
+
+Someone wrote:
+
+```
+q₀ --0/0--> q₁
+q₀ --1/0--> q₀
+
+q₁ --0/1--> q₁
+q₁ --1/1--> q₀
+```
+
+Only one transition is wrong.
+
+Find a short input that exposes the error.
+
+---
+
+# Find the bug
+## Answer
+
+The wrong transition:
+
+```
+q₁ --0/1--> q₁
+```
+
+Try input:
+
+`00`
+
+The broken machine reports a detection!
+
+But `00` does not contain `01`.
+
+---
+
+# Find the bug
+## contd.
+
+Correct transition:
+
+```
+q₁ --0/0--> q₁
+```
+
+We stay in q₁ because the last symbol is still `0`.
+
+But no `01` has been detected.
+
+---
+
+# Design your own machine
+
+## A turnstile
+
+Two possible states:
+
+- LOCKED
+- UNLOCKED
+
+Two input symbols:
+
+- `coin`
+- `push`
+
+Can we design a Mealy machine?
+
+---
+
+# What should it do?
+
+When LOCKED:
+
+- `coin` → unlock
+- `push` → deny
+
+When UNLOCKED:
+
+- `coin` → refund
+- `push` → allow passage and lock again
+
+---
+
+# What should it do?
+## contd.
+
+First decide the transitions.
+
+Then add the outputs.
+
+Questions:
+
+- What information must the machine remember?
+- What should happen for every state/input pair?
+
+---
+
+# A possible solution
+
+```
+State    | coin                | push
+---------+---------------------+----------------
+LOCKED   | UNLOCKED / unlock   | LOCKED / deny
+UNLOCKED | UNLOCKED / refund   | LOCKED / pass
+```
+
+Initial state: LOCKED
+
+Is every transition specified?
+
+Is the machine deterministic?
+
+---
+
+# Test your design
+
+Input:
+
+```
+coin push push coin coin push
+```
+
+Expected output:
+
+```
+unlock pass deny unlock refund pass
+```
+
+Can somebody trace the whole run?
+
+---
+
+# One last design question
+
+Would a Moore machine be more natural for our turnstile?
+
+Consider:
+
+- Reporting a condition, such as LOCKED
+- Reporting an event, such as PASS
+
+What does each model make easier to express?
+
+---
+
+# What did we learn?
+
+A state is information about the past that matters.
+
+A transition updates that information.
+
+A Mealy machine produces output on transitions.
+
+A Moore machine associates output with states.
+
+---
+
+# What did we learn?
+## contd.
+
+Both models can describe useful computational behaviour.
+
+And both rely on the same fundamental idea:
+
+**The current state contains the relevant memory of the past.**
+
+---
+
+# The bigger picture
+
+```
+Language
+   ↓
+Recognizer
+   ↓
+Finite automaton
+   ↓
+Transducer
+   ↓
+Reactive behaviour
+```
+
+Finite-state machines are not just diagrams.
+
+They are models of computation.
+
+---
+
+# Before you go
+
+Two questions:
+
+1. Where is the output defined in a Mealy machine?
+2. Where is the output defined in a Moore machine?
+
+And one bigger question:
+
+**What kinds of information can't a finite-state machine remember?**
+
+---
+
+# Q&A
+
