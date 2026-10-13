@@ -1163,6 +1163,15 @@ Extend your page so it can:
 * modify the DOM
 * fetch data
 * communicate with a server
+---
+# Your task 🧪
+## One page for every herb
+Yesterday: one herb, one page written by hand.
+
+Today only `index.html` stays.
+* `index.html#basil` shows basil
+* its data comes from `data/basil.json`, with `fetch()`
+* yesterday's page goes: JavaScript builds it now
 ===
 title: Day 4 The Project
 author: Josef Pospíšil
