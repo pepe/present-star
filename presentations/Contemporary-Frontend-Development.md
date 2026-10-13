@@ -914,7 +914,7 @@ date: 2026-10-14
 ## Functionality
 How do we make the page alive?
 ---
-# Yesterday's page is dead
+# Yesterday's page is dead 💬
 It contains information.
 
 But nothing really happens.
@@ -937,7 +937,7 @@ CSS   → presentation
 JS    → behaviour
 ```
 ---
-# Values
+# Values 🧪
 JavaScript works with values.
 ```js
 42
@@ -952,7 +952,7 @@ let count = 0
 ```
 A name can refer to a value.
 ---
-# Functions
+# Functions 🧪
 ```js
 function greet(name) {
   return `Hello, ${name}!`
@@ -986,13 +986,13 @@ Yesterday we inspected the tree.
 
 Today we change it.
 ---
-# Find something
+# Find something 🎬
 ```js
 const button =
   document.querySelector("button")
 ```
 ---
-# Change something
+# Change something 🧪
 ```js
 button.textContent = "Saved"
 ```
@@ -1008,7 +1008,7 @@ Things happen in the browser.
 * load
 * message
 ---
-# Listen
+# Listen 🎬
 ```js
 button.addEventListener("click", () => {
   console.log("Clicked!")
@@ -1037,7 +1037,7 @@ count += 1
 # State → View
 The visible page often depends on application state.
 ---
-# Example
+# Example 💬
 ```text
 state = 3
    ↓
@@ -1057,7 +1057,7 @@ The browser sends a request.
 
 The server sends a response.
 ---
-# `fetch()`
+# `fetch()` 🎬
 ```js
 const response =
   await fetch("/data.json")
@@ -1069,7 +1069,7 @@ const data =
   await response.json()
 ```
 ---
-# Then...
+# Then... 🔎
 ```text
 server
   ↓
@@ -1082,7 +1082,7 @@ DOM
 user
 ```
 ---
-# Request / response is not always enough
+# Request / response is not always enough 💬
 What if the server has something new later?
 ---
 # Polling
@@ -1093,7 +1093,7 @@ browser ─?─► server
 ```
 Ask again and again.
 ---
-# Server-Sent Events
+# Server-Sent Events 🔎
 ```text
 browser ─────► server
         ◄──── event
@@ -1118,19 +1118,19 @@ A persistent two-way channel.
 # WebSocket
 Useful when both sides need to communicate frequently.
 ---
-# Which one?
+# Which one? 💬
 Loading a user profile.
 ---
-# Which one?
+# Which one? 💬
 Live server notifications.
 ---
-# Which one?
+# Which one? 💬
 A chat application.
 ---
-# Which one?
+# Which one? 💬
 A multiplayer game.
 ---
-# Which one?
+# Which one? 💬
 Submitting a registration form.
 ---
 # There is no universal transport
@@ -1152,10 +1152,10 @@ You will encounter:
 * bundlers
 * build systems
 ---
-# Frameworks are answers
+# Frameworks are answers 💬
 Before learning the answer, understand the problem.
 ---
-# Day 3 goal
+# Day 3 goal 🧪
 Extend your page so it can:
 * react to input
 * handle events
