@@ -1172,6 +1172,14 @@ Today only `index.html` stays.
 * `index.html#basil` shows basil
 * its data comes from `data/basil.json`, with `fetch()`
 * yesterday's page goes: JavaScript builds it now
+---
+# The final project 🧪
+## The Little Herb Garden, complete
+* every herb has its `data/<herb>.json`, in one format documented in the README
+* published on GitHub Pages
+* it copes when something is missing: an unknown herb, a missing file, no server
+* it works with the keyboard alone
+* plus one feature your group chooses
 ===
 title: Day 4 The Project
 author: Josef Pospíšil
