@@ -17,11 +17,12 @@
   :data-path "/srv/data/present-star"
   :repo "https://github.com/pepe/present-star"
   :env "prod"
-  # The Janet the peers are built with, as interstudy has it on this box:
-  # the box's own is older than gp and twm need.
+  # The Janet the peers are built with: upstream, at a revision with the
+  # threaded-channel fixes gp and twm rely on. The box's own is older than
+  # gp and twm need.
   :janet-source
-  {:repo "https://github.com/pepe/janet.git"
-   :rev "b86ad57a6f4e7ccef0439b18a373d7720310083c"}}
+  {:repo "https://github.com/janet-lang/janet.git"
+   :rev "fe0e19804ee3bc2484f1405171b4f9bdff645764"}}
  :runtime
  {:debug false
   :log true}
