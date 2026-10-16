@@ -1,6 +1,5 @@
 (use /environment /schema)
 (import twm/symbiont :as symbiont)
-(import twm/subscription)
 
 (setdyn *rpc-defines* [:view])
 
@@ -31,12 +30,13 @@
   ```
   []
   (def [seen] args)
-  (def sub (subscription/open view followed))
-  (defer (subscription/close sub)
+  (def chan (ev/chan 2))
+  (defer (produce (^notify/unsubscribe view chan))
     (protect
+      (produce/applied [(^notify/subscribe view chan ;followed)])
       (ev/with-deadline relay/wait
         (while (= seen (live/mark view))
-          (subscription/take sub))))
+          (ev/take chan))))
     {:mark (live/mark view) :live (view :live)}))
 
 (def membrane/funcs
