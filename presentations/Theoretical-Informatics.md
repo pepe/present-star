@@ -2165,7 +2165,6 @@ And:
 ---
 # Q&A
 ===
-
 title: Mealy and Moore Machines
 author: Josef Pospíšil
 date: 2026-10-13
@@ -3144,4 +3143,660 @@ And one bigger question:
 ---
 
 # Q&A
+===
+title: Introduction to Prolog
+author: Josef Pospíšil
+date: 2026-10-20
+---
+# Introduction to Prolog
+
+EIEC4E / INFOAN1 · Theoretical Informatics
+
+Lecture 4 · From transitions to relations
+
+---
+# One question from last time 💬
+
+**What kinds of information can't a finite-state machine remember?**
+
+Think of something whose required memory keeps growing.
+
+---
+# A fixed amount of memory
+
+A finite-state machine has finitely many states.
+
+Its current state summarises the input seen so far.
+
+It cannot distinguish arbitrarily many different histories.
+
+---
+# What can it remember?
+
+- The last two symbols.
+- Whether the number of `1`s is even or odd.
+- The exact number of `1`s up to a fixed limit.
+
+---
+# What can't it remember?
+
+- An exact count with no upper bound.
+- Arbitrarily deep parenthesis nesting.
+- An arbitrarily long word for exact comparison later.
+
+---
+# The important qualification
+
+**Any fixed amount can fit in enough states.**
+
+The limitation appears when the required memory can grow without bound.
+
+More states move a fixed limit. They do not remove it.
+
+---
+# A quick sweep: DFA and NFA
+
+States record distinctions relevant to recognition.
+
+Transitions describe how input changes the state.
+
+Acceptance depends on the state after the whole word.
+
+---
+# A quick sweep: Mealy and Moore
+
+Both describe machines that produce outputs.
+
+Mealy associates outputs with state/input pairs.
+
+Moore associates outputs with states.
+
+---
+# A different description of computation
+
+With automata, we specified states and transitions.
+
+With Prolog, we will describe relations and rules.
+
+Then we will ask which answers follow.
+
+---
+# Today's destination
+
+- Read facts and ask queries.
+- Write a rule and explain its answers.
+- Follow unification and backtracking.
+
+---
+# One small world
+
+Our world contains four places: `a`, `b`, `c`, `d`.
+
+There are directed edges from `a` to `b`, from `b` to `c`, and from `a` to `d`.
+
+We will describe this world in Prolog.
+
+---
+# Facts
+
+```prolog
+edge(a, b).
+edge(b, c).
+edge(a, d).
+```
+
+Each line states one directed edge.
+
+---
+# Reading a fact
+
+```prolog
+edge(a, b).
+```
+
+“There is an edge from `a` to `b`.”
+
+Argument order carries meaning.
+
+---
+# Predicates and arity 🏛️
+
+`edge/2` names a predicate with two arguments.
+
+`/2` describes the arity. It is not division here.
+
+`edge/1` and `edge/2` would be different predicates.
+
+---
+# Atoms 🏛️
+
+Atoms name things: `a`, `prague`, `station`.
+
+Simple unquoted atoms begin with a lowercase letter.
+
+Single quotes allow names such as `'New Town'`.
+
+---
+# Variables 🏛️
+
+Variables begin with an uppercase letter or underscore.
+
+Examples: `X`, `Place`, `Destination`.
+
+A variable can stand for a term we have not yet determined.
+
+---
+# Terms 🏛️
+
+- Atoms and numbers are terms: `a`, `42`.
+- Variables are terms: `X`.
+- Compound terms have structure: `edge(a, X)`.
+
+---
+# Small syntax, large consequences
+
+```prolog
+edge(a, b).  % A fact ends with a full stop.
+```
+
+`a` is an atom. `A` is a variable.
+
+Prolog distinguishes uppercase and lowercase letters.
+
+---
+# Loading our world 🎬
+
+Save the three facts in `world.pl`.
+
+Start SWI-Prolog with `swipl`, then enter:
+
+```prolog
+?- [world].
+```
+
+---
+# Source and query
+
+Put facts and rules in the `.pl` file.
+
+Type queries at the `?-` prompt.
+
+In these slides, `?-` marks a query, not a source clause.
+
+---
+# A question with no variables 💬
+
+```prolog
+?- edge(a, b).
+```
+
+Can this goal be proved using our facts?
+
+---
+# A question with no variables
+## contd.
+
+```prolog
+?- edge(a, b).
+true.
+```
+
+The fact matches the goal.
+
+---
+# A question with no matching fact 💬
+
+```prolog
+?- edge(b, a).
+```
+
+Does reversing the arguments preserve the answer?
+
+---
+# A question with no matching fact
+## contd.
+
+```prolog
+?- edge(b, a).
+false.
+```
+
+We stated no edge from `b` to `a` and supplied no rule deriving one.
+
+---
+# What does failure tell us?
+
+For this terminating query, Prolog found no proof in the program.
+
+That describes our program's knowledge.
+
+It does not establish a fact about every possible real world.
+
+---
+# A question with a variable 💬
+
+```prolog
+?- edge(a, X).
+```
+
+Which places can we reach directly from `a`?
+
+---
+# A question with a variable
+## contd.
+
+```prolog
+X = b ;
+X = d.
+```
+
+Two different bindings satisfy the query.
+
+---
+# Asking for another answer 🎬
+
+At the answer prompt, `;` requests another solution.
+
+Enter accepts the current answer and stops the search.
+
+Exact punctuation at the end can depend on remaining choices.
+
+---
+# The scope of a variable
+
+Within one query, repeated `X` means the same variable.
+
+In a new query, `X` is a fresh variable.
+
+Variables in separate clauses are also independent.
+
+---
+# An answer we do not need
+
+```prolog
+?- edge(a, _).
+```
+
+“Does `a` have an outgoing edge?”
+
+Each plain `_` is a fresh anonymous variable.
+
+---
+# A first prediction 🧪
+
+```prolog
+?- edge(X, c).
+?- edge(c, X).
+```
+
+Predict all answers to each query separately.
+
+---
+# A first prediction
+## contd.
+
+`edge(X, c)` has the answer `X = b`.
+
+`edge(c, X)` has no solution.
+
+Incoming and outgoing edges are different relations to a place.
+
+---
+# Unification
+
+Unification makes two terms the same by binding variables.
+
+```prolog
+?- edge(a, X) = edge(a, b).
+```
+
+The binding is `X = b`.
+
+---
+# Unification
+## contd.
+
+Compound terms must agree in functor and arity.
+
+Their corresponding arguments must also unify.
+
+`edge(a, X)` cannot unify with `edge(b, c)`.
+
+---
+# The same variable twice 💬
+
+```prolog
+?- edge(X, X) = edge(a, b).
+```
+
+Can one binding for `X` satisfy both positions?
+
+---
+# The same variable twice
+## contd.
+
+The answer is `false`.
+
+The first position requires `X = a`.
+
+The second requires `X = b`, but `a` and `b` differ.
+
+---
+# Bindings constrain later goals
+
+```prolog
+?- X = a, X = b.
+```
+
+This query fails.
+
+The second goal cannot overwrite the binding from the first.
+
+---
+# The meaning of `=`
+
+```prolog
+?- X = 1 + 2.
+```
+
+`X` becomes the compound term `1 + 2`.
+
+`=` performs unification. Arithmetic evaluation is a separate topic.
+
+---
+# Combining questions
+
+```prolog
+?- edge(a, Y), edge(Y, c).
+```
+
+A comma joins goals with **and**.
+
+The same `Y` must connect both edges.
+
+---
+# Combining questions
+## contd.
+
+The first goal can bind `Y = b`.
+
+Then the second goal becomes `edge(b, c)`.
+
+Both goals succeed, so `Y = b` is an answer.
+
+---
+# A relation we have not listed
+
+There is a route of exactly two edges from `a` to `c`.
+
+We have facts for the individual edges.
+
+Can we describe two-edge routes with one general rule?
+
+---
+# A rule
+
+```prolog
+two_steps(X, Z) :-
+    edge(X, Y), edge(Y, Z).
+```
+
+“Two steps connect `X` to `Z` if an intermediate `Y` connects the edges.”
+
+---
+# Head and body 🏛️
+
+The **head** is `two_steps(X, Z)`.
+
+The **body** is `edge(X, Y), edge(Y, Z)`.
+
+`:-` reads as “if”. The body supplies sufficient conditions for the head.
+
+---
+# The intermediate place
+
+`X` and `Z` are the endpoints of the relation.
+
+`Y` occurs only in the body of this rule.
+
+A successful proof needs some `Y` satisfying both goals.
+
+---
+# Rules can answer different questions
+
+```prolog
+?- two_steps(a, c).
+?- two_steps(a, Destination).
+?- two_steps(Start, c).
+```
+
+The same rule supports checking and finding bindings.
+
+---
+# Following one query 🔎
+
+```prolog
+?- two_steps(a, Destination).
+```
+
+We will follow how Prolog searches for an answer.
+
+---
+# Following one query
+## contd.
+
+The query unifies with the rule head.
+
+The body supplies the new goals:
+
+```prolog
+edge(a, Y), edge(Y, Destination).
+```
+
+---
+# Following one query
+## contd.
+
+The first matching edge fact is `edge(a, b)`.
+
+This binds `Y = b`, leaving:
+
+```prolog
+edge(b, Destination).
+```
+
+---
+# Following one query
+## contd.
+
+`edge(b, c)` matches the remaining goal.
+
+The answer is `Destination = c`.
+
+Every goal in this branch has succeeded.
+
+---
+# Is there another answer? 💬
+
+The first goal could also use `edge(a, d)`.
+
+That would bind `Y = d`.
+
+What must succeed next?
+
+---
+# Is there another answer?
+## contd.
+
+The remaining goal is `edge(d, Destination)`.
+
+Our original program has no matching fact.
+
+This branch fails. There is no second answer.
+
+---
+# Backtracking
+
+Prolog returns to a choice with an untried alternative.
+
+It undoes bindings made since that choice.
+
+Then it tries another way to satisfy the goals.
+
+---
+# Search order
+
+For our ordinary Prolog clauses, goals run left to right.
+
+Matching clauses are tried in their program order.
+
+Search follows a branch before returning to alternatives.
+
+---
+# Meaning and execution
+
+A rule expresses a logical relationship.
+
+Its written order also guides Prolog's search.
+
+Later, recursion will make termination an important question.
+
+---
+# A rule-writing exercise 🧪
+
+Define `incoming(To, From)` using `edge/2`.
+
+It should hold when an edge goes from `From` to `To`.
+
+Predict the answers to `incoming(c, Who)`.
+
+---
+# A rule-writing exercise
+## contd.
+
+```prolog
+incoming(To, From) :- edge(From, To).
+```
+
+`incoming(c, Who)` has the answer `Who = b`.
+
+This changes the argument convention, not the direction of any edge.
+
+---
+# All pairs 🧪
+
+```prolog
+?- two_steps(Start, End).
+```
+
+Find every pair using the original three edge facts.
+
+---
+# All pairs
+## contd.
+
+The only answer is `Start = a, End = c`.
+
+The witness is the intermediate place `b`.
+
+The other edges cannot start a complete two-edge route.
+
+---
+# Changing the world 🧪
+
+Append `edge(d, e).` to `world.pl`.
+
+Predict all answers to `two_steps(a, X)` now.
+
+Which previously failing branch will succeed?
+
+---
+# Changing the world
+## contd.
+
+The answers are `X = c`, then `X = e`.
+
+The intermediate places are `b` and `d`.
+
+After saving the file, run `make.` at the prompt to reload changes.
+
+---
+# Finding the mistake 🧪
+
+```prolog
+two_steps(X, Z) :-
+    edge(X, Y), edge(W, Z).
+```
+
+Does this require the two edges to meet?
+
+---
+# Finding the mistake
+## contd.
+
+`Y` and `W` are different variables.
+
+The two edges can be unrelated.
+
+Use the same intermediate variable in both goals.
+
+---
+# Answers and proofs
+
+Different paths can produce the same endpoint binding.
+
+Ordinary Prolog search may return that binding more than once.
+
+Enumerating proofs does not automatically remove duplicates.
+
+---
+# What have we gained?
+
+We can state a relation once and ask several kinds of questions.
+
+Variables carry information through a proof.
+
+Prolog's runtime manages terms, bindings and search beyond an FSM's fixed state.
+
+---
+# Before you leave 🧪
+
+- How do `a` and `A` differ?
+- What does the comma in a rule body mean?
+- What happens when Prolog backtracks?
+
+---
+# Before you leave
+## contd.
+
+- `a` is an atom. `A` is a variable.
+- The comma means both goals must succeed.
+- Backtracking undoes bindings and tries alternatives.
+
+---
+# What comes next?
+
+Rules can also refer to the relation they define.
+
+That will let us describe routes of arbitrary finite length.
+
+We will need a stopping case and a careful search order.
+
+---
+# References
+
+[SWI-Prolog: Getting started](https://www.swi-prolog.org/pldoc/man?section=quickstart)
+
+[SWI-Prolog: Syntax](https://www.swi-prolog.org/pldoc/man?section=syntax)
+
+[SWI-Prolog: Unification](https://www.swi-prolog.org/pldoc/man?section=compare)
+
+---
+# Questions 💬
+
+Which part of an answer comes from the facts?
+
+Which part comes from a rule?
+
+Which part depends on the search?
 
