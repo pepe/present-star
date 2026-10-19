@@ -20,6 +20,26 @@
         # The form present-star has always read: `!alt[src]`.
         (* "!" (not "[") (<- (some (if-not "[" 1))) "[" (<- (to "]")) "]" -1))))
 
+(def- table/delimiter
+  ```
+  The line under a table's header: dashes for every column, and a colon on
+  the side its cells lean to, `|---|:---:|---:|`.
+  ```
+  (peg/compile
+    ~{:column (* (any " ") (<- (* (? ":") (some "-") (? ":"))) (any " "))
+      :main (* "|" :column (any (* "|" :column)) (? "|") (any " ") -1)}))
+
+(def- table/row
+  ```
+  The cells of one row of a table, `| a | b |`, trimmed. A `\|` is a pipe
+  inside a cell rather than the edge of one.
+  ```
+  (peg/compile
+    ~{:cell (/ (% (any (+ (* "\\|" (constant "|")) (<- (if-not "|" 1)))))
+               ,string/trim)
+      :main (* "|" :cell (any (* "|" (not (* (any " ") -1)) :cell))
+               (? "|") (any " ") -1)}))
+
 (def- legacy-link
   ```
   A whole line that is `text[url]`, the only link present-star used to read.
@@ -172,6 +192,64 @@
       (peg/match quote-line text)
       (peg/match image text)))
 
+(defn- table/at?
+  ```
+  Whether a table begins at line `i` of `lines`: a row, and the dashes of a
+  delimiter line under it. Without them a line in pipes is a paragraph.
+  ```
+  [lines i]
+  (and (< (inc i) (length lines))
+       (string/has-prefix? "|" ((lines i) 1))
+       (peg/match table/delimiter ((lines (inc i)) 1))))
+
+(defn- table/align
+  "The class the cells of a column take from its `delimiter`, or nil."
+  [delimiter]
+  (def left (string/has-prefix? ":" delimiter))
+  (def right (string/has-suffix? ":" delimiter))
+  (cond
+    (and left right) "align-center"
+    right "align-right"
+    left "align-left"))
+
+(defn- table/block
+  ```
+  Parses the table beginning at `at`, answering it and the index of the
+  line after it.
+
+  Its rows are the lines in pipes that follow the delimiter. A row short of
+  cells has the rest empty, and one with more cells than the header is
+  refused rather than cut, since what is cut off is said nowhere else:
+  most often a pipe meant as text, which is written `\|`.
+  ```
+  [lines at]
+  (def [n text] (lines at))
+  (def header (peg/match table/row text))
+  (def aligns (map table/align (peg/match table/delimiter ((lines (inc at)) 1))))
+  (def width (length aligns))
+  (unless (= width (length header))
+    (fail n (string/format "This table's header has %d cells and the line under it %d."
+                           (length header) width)))
+  (defn cell [tag k text]
+    (if-let [align (aligns k)]
+      [tag {:class align} ;(inline/parse text)]
+      [tag ;(inline/parse text)]))
+  (def rows @[])
+  (var i (+ at 2))
+  (while (and (< i (length lines)) (string/has-prefix? "|" ((lines i) 1)))
+    (def [m row] (lines i))
+    (def cells (peg/match table/row row))
+    (when (> (length cells) width)
+      (fail m (string/format (string "This row has %d cells and its table %d. "
+                                     "A `|` inside a cell is written `\\|`.")
+                             (length cells) width)))
+    (array/push rows [:tr ;(seq [k :range [0 width]] (cell :td k (get cells k "")))])
+    (++ i))
+  [[:table
+    [:thead [:tr ;(seq [[k text] :pairs header] (cell :th k text))]]
+    ;(if (empty? rows) [] [[:tbody ;rows]])]
+   i])
+
 (defn- list/items
   "Collects the items of one list starting at `at`, joining continuations."
   [lines at item-peg]
@@ -225,6 +303,11 @@
         (array/push blocks [:img {:src src :alt alt}])
         (++ i))
 
+      (table/at? lines i)
+      (let [[table next] (table/block lines i)]
+        (array/push blocks table)
+        (set i next))
+
       (peg/match bullet text)
       (let [[items next] (list/items lines i bullet)]
         (array/push blocks [:ul ;(seq [item :in items] [:li ;(inline/parse item)])])
@@ -245,7 +328,9 @@
 
       (let [said @[text]]
         (++ i)
-        (while (and (< i (length lines)) (not (block/start? ((lines i) 1))))
+        (while (and (< i (length lines))
+                    (not (block/start? ((lines i) 1)))
+                    (not (table/at? lines i)))
           (array/push said (string/trim ((lines i) 1)))
           (++ i))
         (array/push blocks [:p ;(inline/parse (string/join said " "))]))))

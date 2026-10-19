@@ -7,6 +7,8 @@ Format for entries is <version-string> - release date.
   presenter/sentry, watcher, and a demiurge over them.
 - The lecturer presents at one URL, the students follow live at another.
 - Decks in sections, titled after their files, with code blocks.
+- Tables on the slides, their columns aligned as the dashes under the
+  header say.
 - A deck that cannot be read is refused with its line, and never cut short.
 - Decks listed from the one saved last.
 - A deck is staged before it is presented: the students see its title, the

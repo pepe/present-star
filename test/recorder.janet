@@ -31,6 +31,11 @@
         "Code keeps its language")
 (assert (deep= [:code "x"] (clean [:code {:class "language-x\" onload=\"y()"} "x"]))
         "and nothing that only looks like one")
+(def grid [:table [:thead [:tr [:th "Q"] [:th {:class "align-center"} "A"]]]
+            [:tbody [:tr [:td "x"] [:td {:class "align-right"} [:em "y"]]]]])
+(assert (deep= grid (clean grid)) "A table is kept, with its alignment")
+(assert (deep= [:td "x"] (clean [:td {:class "align-center\" onclick=\"y()" :style "z"} "x"]))
+        "and nothing that only looks like it")
 (assert (nil? (clean (fn [] :called))) "Nothing but plain data gets through")
 (assert (nil? (clean @{:tag :script})) "not even a table")
 (end-suite)

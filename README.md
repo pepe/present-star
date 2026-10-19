@@ -59,9 +59,16 @@ Between the `---` lines of a section go its slides:
 - headings `#`, `##`, `###`
 - bullets with `*` or `-`, numbered lists `1.`
 - paragraphs, `> quotes`, `![alt](src)` images
+- tables, rows in pipes `| a | b |` with dashes under the header,
+  `|---|:---:|`, a colon on the side a column leans to; `\|` is a pipe
+  inside a cell
 - `` `code` ``, `**bold**`, `*emphasis*`, `[links](https://janet-lang.org)`
 - fenced code blocks with their language, `` ```janet ``; a `---` or `===`
   inside one is code
+
+A deck's own pictures go in `public/`, which both doors serve from disk:
+`public/img/ftdm-seminar/uml/use-case.png` is shown by
+`![…](/img/ftdm-seminar/uml/use-case.png)`.
 
 A deck that cannot be read is refused with the line it broke at, shown on
 the presenter's page. The deck built before it stays, on the stage too.
@@ -113,8 +120,8 @@ in their relay's `:followers`, and put theirs in your recorder's `:follows`:
 
 No secret ever travels: a public key lets nobody in who does not hold its
 secret. A recorded slide is kept only as far as it is plain text, headings,
-lists, code, and links and images on the web: it is shown in the lecturer's
-own signed-in page, so nothing from elsewhere may run there.
+lists, tables, code, and links and images on the web: it is shown in the
+lecturer's own signed-in page, so nothing from elsewhere may run there.
 
 ## Development
 

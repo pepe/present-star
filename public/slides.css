@@ -162,6 +162,34 @@ button.primary {
   align-self: center;
 }
 
+/* A table reads like the text beside it: ruled between its rows, and
+   its header apart from them. */
+.slide table {
+  align-self: flex-start;
+  max-width: 100%;
+  border-collapse: collapse;
+}
+.slide th,
+.slide td {
+  padding: 0.6cqw 1.6cqw;
+  border-bottom: 0.15cqw solid var(--line);
+  text-align: left;
+  vertical-align: top;
+}
+.slide th {
+  border-bottom: 0.3cqw solid var(--accent);
+}
+.slide th:first-child,
+.slide td:first-child {
+  padding-left: 0;
+}
+.slide .align-center {
+  text-align: center;
+}
+.slide .align-right {
+  text-align: right;
+}
+
 .slide blockquote {
   margin: 0;
   padding-left: 2cqw;

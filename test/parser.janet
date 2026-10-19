@@ -107,6 +107,45 @@
           "An indented line continues its bullet"))
 (end-suite)
 
+(start-suite :tables)
+(let [[s] (slides (deck "title: T" "---"
+                        "Read it across:"
+                        "| Question | Diagram | Views |"
+                        "|---|:---:|--:|"
+                        "| Who **wants** it? | `use case` | 1 |"
+                        `| A \| B | class |`
+                        "After it"))]
+  (assert (deep= [:section
+                  [:p "Read it across:"]
+                  [:table
+                   [:thead [:tr [:th "Question"]
+                            [:th {:class "align-center"} "Diagram"]
+                            [:th {:class "align-right"} "Views"]]]
+                   [:tbody
+                    [:tr [:td "Who " [:strong "wants"] " it?"]
+                     [:td {:class "align-center"} [:code "use case"]]
+                     [:td {:class "align-right"} "1"]]
+                    [:tr [:td "A | B"] [:td {:class "align-center"} "class"]
+                     [:td {:class "align-right"}]]]]
+                  [:p "After it"]]
+                 s)
+          "A table has its header, its rows, its alignment and its inline text")
+  (assert (string/find "<td>A | B</td>" (hg/html s))
+          "A pipe written `\\|` is text in its cell, and a short row is filled"))
+(let [[s] (slides (deck "title: T" "---" "| Only | Header |" "|---|---|"))]
+  (assert (deep= [:section [:table [:thead [:tr [:th "Only"] [:th "Header"]]]]] s)
+          "A table may be its header alone"))
+(let [[s] (slides (deck "title: T" "---" "| not a table |" "still text"))]
+  (assert (deep= [:section [:p "| not a table | still text"]] s)
+          "A line in pipes without the dashes under it is a paragraph"))
+(let [err (refused (string/join ["title: T" "---" "# A" "| a | b |" "|---|"] "\n"))]
+  (assert (= 4 (err :line)) "A header and dashes that disagree are refused at the header")
+  (assert (string/find "2 cells" (err :message)) "and say how many each has"))
+(let [err (refused (string/join ["title: T" "---" "| a |" "|---|" "| x |" "| x | y |"] "\n"))]
+  (assert (= 6 (err :line)) "A row longer than its table is refused, not cut")
+  (assert (string/find `\|` (err :message)) "and says how a pipe is written in a cell"))
+(end-suite)
+
 (start-suite :sections)
 # The course decks: sections parted by `===`, each opening with a
 # frontmatter of its own, the later ones behind a `---`.
@@ -163,4 +202,6 @@
 (start-suite :escaping)
 (let [[s] (slides (deck "title: T" "---" "# <script>alert(1)</script>"))]
   (assert (string/find "&lt;script&gt;" (hg/html s)) "Slide text cannot inject HTML"))
+(let [[s] (slides (deck "title: T" "---" "| <b>x</b> |" "|---|"))]
+  (assert (string/find "&lt;b&gt;" (hg/html s)) "and neither can a table cell"))
 (end-suite)

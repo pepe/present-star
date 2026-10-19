@@ -13,9 +13,18 @@
 
 (def- plain
   "Elements a slide is made of that keep no attributes."
-  [:section :h1 :h2 :h3 :h4 :h5 :h6 :p :ul :ol :li :blockquote :pre :strong :em])
+  [:section :h1 :h2 :h3 :h4 :h5 :h6 :p :ul :ol :li :blockquote :pre :strong :em
+   :table :thead :tbody :tr])
 
 (def- language (peg/compile ~(* "language-" (some (+ :w (set "+-#."))) -1)))
+
+(def- aligned (peg/compile ~(* "align-" (+ "left" "center" "right") -1)))
+
+(defn- align/of
+  "The alignment a table cell `given` its attributes keeps, or nil."
+  [given]
+  (if (and (string? (given :class)) (peg/match aligned (given :class)))
+    {:class (given :class)}))
 
 (defn- web?
   [url]
@@ -30,7 +39,9 @@
     :img (if (web? (given :src))
            {:src (given :src) :alt (if (string? (given :alt)) (given :alt) "")})
     :code (if (and (string? (given :class)) (peg/match language (given :class)))
-            {:class (given :class)})))
+            {:class (given :class)})
+    :th (align/of given)
+    :td (align/of given)))
 
 (defn slide/clean
   ```
@@ -57,6 +68,7 @@
         (= :img tag) (if attrs [:img attrs])
         (= :a tag) (if attrs [:a attrs ;kept] [:span ;kept])
         (= :code tag) (if attrs [:code attrs ;kept] [:code ;kept])
+        (index-of tag [:th :td]) (if attrs [tag attrs ;kept] [tag ;kept])
         (index-of tag plain) [tag ;kept]))))
 
 (defn recording/id
