@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="360" viewBox="0 0 1100 360">
+<rect width="1100" height="360" fill="white"/>
+<defs><marker id="open" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M1,1 L10,6 L1,11" fill="none" stroke="#183442" stroke-width="1.5"/></marker><marker id="filled" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M0,0 L9,5 L0,10 z" fill="#183442"/></marker></defs>
+<rect x="45" y="70" width="330" height="140" rx="0" fill="#edf6f7" stroke="#183442" stroke-width="2"/>
+<text x="210.0" y="106" text-anchor="middle" font-family="DejaVu Sans,sans-serif" font-size="25" font-weight="bold" fill="#183442">Student</text>
+<line x1="45" y1="123" x2="375" y2="123" stroke="#183442" stroke-width="2"/>
+<text x="60" y="157" text-anchor="start" font-family="DejaVu Sans,sans-serif" font-size="22" font-weight="normal" fill="#183442">studentId: String</text>
+<rect x="725" y="70" width="330" height="140" rx="0" fill="#edf6f7" stroke="#183442" stroke-width="2"/>
+<text x="890.0" y="106" text-anchor="middle" font-family="DejaVu Sans,sans-serif" font-size="25" font-weight="bold" fill="#183442">Enrollment</text>
+<line x1="725" y1="123" x2="1055" y2="123" stroke="#183442" stroke-width="2"/>
+<text x="740" y="157" text-anchor="start" font-family="DejaVu Sans,sans-serif" font-size="22" font-weight="normal" fill="#183442">status: EnrollmentStatus</text>
+<line x1="375" y1="140" x2="725" y2="140" stroke="#183442" stroke-width="2"/>
+<text x="405" y="120" text-anchor="middle" font-family="DejaVu Sans,sans-serif" font-size="24" font-weight="normal" fill="#183442">1</text>
+<text x="685" y="120" text-anchor="middle" font-family="DejaVu Sans,sans-serif" font-size="24" font-weight="normal" fill="#183442">0..*</text>
+<text x="550" y="290" text-anchor="middle" font-family="DejaVu Sans,sans-serif" font-size="25" font-weight="normal" fill="#183442">For one Enrollment: exactly 1 Student.</text>
+<text x="550" y="330" text-anchor="middle" font-family="DejaVu Sans,sans-serif" font-size="25" font-weight="normal" fill="#183442">For one Student: 0 or more Enrollments.</text>
+</svg>

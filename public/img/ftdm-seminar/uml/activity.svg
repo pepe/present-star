@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="600" viewBox="0 0 1100 600">
+<rect width="1100" height="600" fill="white"/>
+<defs><marker id="open" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M1,1 L10,6 L1,11" fill="none" stroke="#183442" stroke-width="1.5"/></marker><marker id="filled" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M0,0 L9,5 L0,10 z" fill="#183442"/></marker></defs>
+<circle cx="550" cy="35" r="12" fill="#183442" stroke="#183442" stroke-width="2"/>
+<line x1="550" y1="47" x2="550" y2="90" stroke="#183442" stroke-width="2" marker-end="url(#open)"/>
+<rect x="410" y="90" width="280" height="60" rx="15" fill="#edf6f7" stroke="#183442" stroke-width="2"/>
+<text x="550.0" y="128" text-anchor="middle" font-family="DejaVu Sans,sans-serif" font-size="23" font-weight="normal" fill="#183442">Submit request</text>
+<line x1="550" y1="150" x2="550" y2="195" stroke="#183442" stroke-width="2" marker-end="url(#open)"/>
+<rect x="410" y="195" width="280" height="60" rx="15" fill="#edf6f7" stroke="#183442" stroke-width="2"/>
+<text x="550.0" y="233" text-anchor="middle" font-family="DejaVu Sans,sans-serif" font-size="23" font-weight="normal" fill="#183442">Assess request</text>
+<line x1="550" y1="255" x2="550" y2="290" stroke="#183442" stroke-width="2" marker-end="url(#open)"/>
+<polygon points="550,290 595,335 550,380 505,335" fill="#edf6f7" stroke="#183442" stroke-width="2"/>
+<line x1="505" y1="335" x2="230" y2="335" stroke="#183442" stroke-width="2"/>
+<line x1="230" y1="335" x2="230" y2="425" stroke="#183442" stroke-width="2" marker-end="url(#open)"/>
+<text x="350" y="315" text-anchor="middle" font-family="DejaVu Sans,sans-serif" font-size="23" font-weight="normal" fill="#183442">[eligible]</text>
+<line x1="595" y1="335" x2="870" y2="335" stroke="#183442" stroke-width="2"/>
+<line x1="870" y1="335" x2="870" y2="425" stroke="#183442" stroke-width="2" marker-end="url(#open)"/>
+<text x="745" y="315" text-anchor="middle" font-family="DejaVu Sans,sans-serif" font-size="23" font-weight="normal" fill="#183442">[else]</text>
+<rect x="90" y="425" width="280" height="60" rx="15" fill="#edf6f7" stroke="#183442" stroke-width="2"/>
+<text x="230.0" y="463" text-anchor="middle" font-family="DejaVu Sans,sans-serif" font-size="23" font-weight="normal" fill="#183442">Confirm enrollment</text>
+<rect x="730" y="425" width="280" height="60" rx="15" fill="#edf6f7" stroke="#183442" stroke-width="2"/>
+<text x="870.0" y="463" text-anchor="middle" font-family="DejaVu Sans,sans-serif" font-size="23" font-weight="normal" fill="#183442">Reject request</text>
+<line x1="230" y1="485" x2="230" y2="535" stroke="#183442" stroke-width="2" marker-end="url(#open)"/>
+<circle cx="230" cy="550" r="15" fill="white" stroke="#183442" stroke-width="2"/>
+<circle cx="230" cy="550" r="9" fill="#183442" stroke="#183442" stroke-width="2"/>
+<line x1="870" y1="485" x2="870" y2="535" stroke="#183442" stroke-width="2" marker-end="url(#open)"/>
+<circle cx="870" cy="550" r="15" fill="white" stroke="#183442" stroke-width="2"/>
+<circle cx="870" cy="550" r="9" fill="#183442" stroke="#183442" stroke-width="2"/>
+<text x="550" y="592" text-anchor="middle" font-family="DejaVu Sans,sans-serif" font-size="22" font-weight="normal" fill="#183442">Eligible means: active student and a place available.</text>
+</svg>

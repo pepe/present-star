@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="600" viewBox="0 0 1100 600">
+<rect width="1100" height="600" fill="white"/>
+<defs><marker id="open" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M1,1 L10,6 L1,11" fill="none" stroke="#183442" stroke-width="1.5"/></marker><marker id="filled" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M0,0 L9,5 L0,10 z" fill="#183442"/></marker></defs>
+<rect x="210" y="45" width="680" height="510" rx="0" fill="white" stroke="#183442" stroke-width="2"/>
+<text x="550" y="82" text-anchor="middle" font-family="DejaVu Sans,sans-serif" font-size="27" font-weight="bold" fill="#183442">Enrollment System</text>
+<circle cx="85" cy="160" r="15" fill="white" stroke="#183442" stroke-width="2"/>
+<line x1="85" y1="175" x2="85" y2="230" stroke="#183442" stroke-width="2"/>
+<line x1="55" y1="195" x2="115" y2="195" stroke="#183442" stroke-width="2"/>
+<line x1="85" y1="230" x2="60" y2="265" stroke="#183442" stroke-width="2"/>
+<line x1="85" y1="230" x2="110" y2="265" stroke="#183442" stroke-width="2"/>
+<text x="85" y="300" text-anchor="middle" font-family="DejaVu Sans,sans-serif" font-size="24" font-weight="normal" fill="#183442">Student</text>
+<circle cx="1015" cy="320" r="15" fill="white" stroke="#183442" stroke-width="2"/>
+<line x1="1015" y1="335" x2="1015" y2="390" stroke="#183442" stroke-width="2"/>
+<line x1="985" y1="355" x2="1045" y2="355" stroke="#183442" stroke-width="2"/>
+<line x1="1015" y1="390" x2="990" y2="425" stroke="#183442" stroke-width="2"/>
+<line x1="1015" y1="390" x2="1040" y2="425" stroke="#183442" stroke-width="2"/>
+<text x="1015" y="460" text-anchor="middle" font-family="DejaVu Sans,sans-serif" font-size="24" font-weight="normal" fill="#183442">Registrar</text>
+<ellipse cx="490" cy="155" rx="165" ry="42" fill="#edf6f7" stroke="#183442" stroke-width="2"/>
+<text x="490" y="163" text-anchor="middle" font-family="DejaVu Sans,sans-serif" font-size="24" font-weight="normal" fill="#183442">Request enrollment</text>
+<line x1="115" y1="195" x2="325" y2="155" stroke="#183442" stroke-width="2"/>
+<ellipse cx="490" cy="275" rx="165" ry="42" fill="#edf6f7" stroke="#183442" stroke-width="2"/>
+<text x="490" y="283" text-anchor="middle" font-family="DejaVu Sans,sans-serif" font-size="24" font-weight="normal" fill="#183442">View enrollment</text>
+<line x1="115" y1="195" x2="325" y2="275" stroke="#183442" stroke-width="2"/>
+<ellipse cx="490" cy="395" rx="165" ry="42" fill="#edf6f7" stroke="#183442" stroke-width="2"/>
+<text x="490" y="403" text-anchor="middle" font-family="DejaVu Sans,sans-serif" font-size="24" font-weight="normal" fill="#183442">Cancel enrollment</text>
+<line x1="115" y1="195" x2="325" y2="395" stroke="#183442" stroke-width="2"/>
+<ellipse cx="690" cy="485" rx="155" ry="42" fill="#edf6f7" stroke="#183442" stroke-width="2"/>
+<text x="690" y="493" text-anchor="middle" font-family="DejaVu Sans,sans-serif" font-size="24" font-weight="normal" fill="#183442">Assess request</text>
+<line x1="985" y1="355" x2="845" y2="485" stroke="#183442" stroke-width="2"/>
+</svg>

@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="500" viewBox="0 0 1100 500">
+<rect width="1100" height="500" fill="white"/>
+<defs><marker id="open" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M1,1 L10,6 L1,11" fill="none" stroke="#183442" stroke-width="1.5"/></marker><marker id="filled" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M0,0 L9,5 L0,10 z" fill="#183442"/></marker></defs>
+<rect x="40" y="85" width="1020" height="360" rx="0" fill="white" stroke="#183442" stroke-width="2"/>
+<rect x="40" y="40" width="390" height="45" rx="0" fill="white" stroke="#183442" stroke-width="2"/>
+<text x="55" y="71" text-anchor="start" font-family="DejaVu Sans,sans-serif" font-size="23" font-weight="bold" fill="#183442">«profile» UniversityModel</text>
+<rect x="100" y="155" width="360" height="150" rx="0" fill="#edf6f7" stroke="#183442" stroke-width="2"/>
+<text x="280" y="185" text-anchor="middle" font-family="DejaVu Sans,sans-serif" font-size="22" font-weight="normal" fill="#183442">«stereotype»</text>
+<text x="280" y="220" text-anchor="middle" font-family="DejaVu Sans,sans-serif" font-size="25" font-weight="bold" fill="#183442">AuditedRecord</text>
+<line x1="100" y1="238" x2="460" y2="238" stroke="#183442" stroke-width="2"/>
+<text x="115" y="278" text-anchor="start" font-family="DejaVu Sans,sans-serif" font-size="22" font-weight="normal" fill="#183442">retentionYears: Integer</text>
+<rect x="680" y="155" width="300" height="150" rx="0" fill="#edf6f7" stroke="#183442" stroke-width="2"/>
+<text x="830" y="190" text-anchor="middle" font-family="DejaVu Sans,sans-serif" font-size="23" font-weight="normal" fill="#183442">«metaclass»</text>
+<text x="830" y="230" text-anchor="middle" font-family="DejaVu Sans,sans-serif" font-size="25" font-weight="bold" fill="#183442">Class</text>
+<line x1="460" y1="220" x2="680" y2="220" stroke="#183442" stroke-width="2" marker-end="url(#filled)"/>
+<text x="570" y="195" text-anchor="middle" font-family="DejaVu Sans,sans-serif" font-size="22" font-weight="normal" fill="#183442">extension</text>
+<text x="550" y="375" text-anchor="middle" font-family="DejaVu Sans,sans-serif" font-size="23" font-weight="normal" fill="#183442">An application could mark Enrollment as «AuditedRecord».</text>
+<text x="550" y="412" text-anchor="middle" font-family="DejaVu Sans,sans-serif" font-size="21" font-weight="normal" fill="#183442">This is a teaching example, not a built-in UML stereotype.</text>
+</svg>

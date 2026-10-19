@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="600" viewBox="0 0 1100 600">
+<rect width="1100" height="600" fill="white"/>
+<defs><marker id="open" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M1,1 L10,6 L1,11" fill="none" stroke="#183442" stroke-width="1.5"/></marker><marker id="filled" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M0,0 L9,5 L0,10 z" fill="#183442"/></marker></defs>
+<text x="550" y="40" text-anchor="middle" font-family="DejaVu Sans,sans-serif" font-size="28" font-weight="bold" fill="#183442">Lifecycle of one Enrollment</text>
+<circle cx="75" cy="170" r="12" fill="#183442" stroke="#183442" stroke-width="2"/>
+<line x1="87" y1="170" x2="220" y2="170" stroke="#183442" stroke-width="2" marker-end="url(#open)"/>
+<rect x="220" y="140" width="250" height="60" rx="15" fill="#edf6f7" stroke="#183442" stroke-width="2"/>
+<text x="345.0" y="178" text-anchor="middle" font-family="DejaVu Sans,sans-serif" font-size="23" font-weight="normal" fill="#183442">pending</text>
+<rect x="725" y="140" width="270" height="60" rx="15" fill="#edf6f7" stroke="#183442" stroke-width="2"/>
+<text x="860.0" y="178" text-anchor="middle" font-family="DejaVu Sans,sans-serif" font-size="23" font-weight="normal" fill="#183442">confirmed</text>
+<rect x="220" y="405" width="250" height="60" rx="15" fill="#edf6f7" stroke="#183442" stroke-width="2"/>
+<text x="345.0" y="443" text-anchor="middle" font-family="DejaVu Sans,sans-serif" font-size="23" font-weight="normal" fill="#183442">rejected</text>
+<rect x="725" y="405" width="270" height="60" rx="15" fill="#edf6f7" stroke="#183442" stroke-width="2"/>
+<text x="860.0" y="443" text-anchor="middle" font-family="DejaVu Sans,sans-serif" font-size="23" font-weight="normal" fill="#183442">cancelled</text>
+<line x1="470" y1="170" x2="725" y2="170" stroke="#183442" stroke-width="2" marker-end="url(#open)"/>
+<text x="595" y="138" text-anchor="middle" font-family="DejaVu Sans,sans-serif" font-size="22" font-weight="normal" fill="#183442">approve [eligible]</text>
+<line x1="345" y1="200" x2="345" y2="405" stroke="#183442" stroke-width="2" marker-end="url(#open)"/>
+<text x="360" y="310" text-anchor="start" font-family="DejaVu Sans,sans-serif" font-size="23" font-weight="normal" fill="#183442">reject</text>
+<line x1="860" y1="200" x2="860" y2="405" stroke="#183442" stroke-width="2" marker-end="url(#open)"/>
+<text x="875" y="310" text-anchor="start" font-family="DejaVu Sans,sans-serif" font-size="23" font-weight="normal" fill="#183442">cancel</text>
+<text x="550" y="555" text-anchor="middle" font-family="DejaVu Sans,sans-serif" font-size="23" font-weight="normal" fill="#183442">No outgoing transition is defined for rejected or cancelled.</text>
+</svg>

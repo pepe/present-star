@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="510" viewBox="0 0 1100 510">
+<rect width="1100" height="510" fill="white"/>
+<defs><marker id="open" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M1,1 L10,6 L1,11" fill="none" stroke="#183442" stroke-width="1.5"/></marker><marker id="filled" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M0,0 L9,5 L0,10 z" fill="#183442"/></marker></defs>
+<polygon points="45,100 70,80 485,80 460,100" fill="#edf6f7" stroke="#183442" stroke-width="2"/>
+<polygon points="460,100 485,80 485,400 460,420" fill="#edf6f7" stroke="#183442" stroke-width="2"/>
+<rect x="45" y="100" width="415" height="320" rx="0" fill="white" stroke="#183442" stroke-width="2"/>
+<text x="252" y="135" text-anchor="middle" font-family="DejaVu Sans,sans-serif" font-size="23" font-weight="normal" fill="#183442">«device»</text>
+<text x="252" y="172" text-anchor="middle" font-family="DejaVu Sans,sans-serif" font-size="26" font-weight="bold" fill="#183442">Client device</text>
+<polygon points="620,100 645,80 1060,80 1035,100" fill="#edf6f7" stroke="#183442" stroke-width="2"/>
+<polygon points="1035,100 1060,80 1060,400 1035,420" fill="#edf6f7" stroke="#183442" stroke-width="2"/>
+<rect x="620" y="100" width="415" height="320" rx="0" fill="white" stroke="#183442" stroke-width="2"/>
+<text x="827" y="135" text-anchor="middle" font-family="DejaVu Sans,sans-serif" font-size="23" font-weight="normal" fill="#183442">«device»</text>
+<text x="827" y="172" text-anchor="middle" font-family="DejaVu Sans,sans-serif" font-size="26" font-weight="bold" fill="#183442">Application server</text>
+<rect x="80" y="215" width="345" height="155" rx="0" fill="#edf6f7" stroke="#183442" stroke-width="2"/>
+<text x="252" y="250" text-anchor="middle" font-family="DejaVu Sans,sans-serif" font-size="20" font-weight="normal" fill="#183442">«executionEnvironment»</text>
+<text x="252" y="287" text-anchor="middle" font-family="DejaVu Sans,sans-serif" font-size="25" font-weight="normal" fill="#183442">Browser</text>
+<rect x="660" y="215" width="335" height="155" rx="0" fill="#edf6f7" stroke="#183442" stroke-width="2"/>
+<text x="827" y="250" text-anchor="middle" font-family="DejaVu Sans,sans-serif" font-size="23" font-weight="normal" fill="#183442">«artifact»</text>
+<text x="827" y="287" text-anchor="middle" font-family="DejaVu Sans,sans-serif" font-size="22" font-weight="normal" fill="#183442">enrollment-service.jar</text>
+<line x1="485" y1="175" x2="620" y2="175" stroke="#183442" stroke-width="2"/>
+<text x="550" y="155" text-anchor="middle" font-family="DejaVu Sans,sans-serif" font-size="22" font-weight="normal" fill="#183442">HTTPS</text>
+<text x="550" y="485" text-anchor="middle" font-family="DejaVu Sans,sans-serif" font-size="23" font-weight="normal" fill="#183442">Illustrative deployment choice, separate from the domain model.</text>
+</svg>
