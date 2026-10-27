@@ -3799,4 +3799,679 @@ Which part of an answer comes from the facts?
 Which part comes from a rule?
 
 Which part depends on the search?
+===
+title: Prolog — Logic, Recursion and Search
+author: Josef Pospíšil
+date: 2026-10-27
+---
+# Prolog: Logic, Recursion and Search
 
+EIEC4E / INFOAN1 · Theoretical Informatics
+
+Lecture 5 · What a program means and how it runs
+
+---
+# Why are we studying Prolog? 💬
+
+We have studied sets, relations and machines.
+
+Prolog gives us an executable way to describe relations and ask questions.
+
+What does the computer actually do to answer them?
+
+---
+# A small laboratory for computation
+
+A few facts describe a world.
+
+A rule expresses a relationship we want to investigate.
+
+A query lets us watch an interpreter search for an answer.
+
+---
+# The mathematical connection
+
+A binary relation is a set of ordered pairs.
+
+`edge(a, b).` states that the pair `(a, b)` belongs to an edge relation.
+
+Rules let us describe further relations using the ones we already have.
+
+---
+# A computation as a proof search
+
+To establish a goal, Prolog looks for a matching fact or rule.
+
+A rule replaces that goal with the conditions in its body.
+
+An answer records bindings from a successful derivation.
+
+---
+# Meaning and execution
+
+**Meaning:** which pairs belong to a relation?
+
+**Execution:** which goals does Prolog try, and in what order?
+
+We need both questions to explain a program's behaviour.
+
+---
+# Today's destination
+
+- Explain a recursive relation.
+- Predict the order in which answers appear.
+- Explain how a search can miss an existing answer by looping.
+
+---
+# A brief recall 🏛️
+
+A fact states a relation instance.
+
+A rule gives sufficient conditions for its head.
+
+A query asks for a proof and, where relevant, variable bindings.
+
+---
+# One shared variable
+
+```prolog
+two_steps(X, Z) :-
+    edge(X, Y), edge(Y, Z).
+```
+
+The same `Y` makes the two edges meet.
+
+---
+# Our graph for today
+
+```prolog
+edge(a, b).
+edge(b, c).
+edge(a, d).
+edge(d, e).
+```
+
+Keep this fact order when predicting answer order.
+
+---
+# A quick prediction 🧪
+
+```prolog
+?- two_steps(a, X).
+```
+
+Which bindings satisfy the query, and in what order?
+
+---
+# A quick prediction
+## contd.
+
+The answers are `X = c`, then `X = e`.
+
+The intermediate places are `b` and `d`.
+
+After these alternatives, the search finishes.
+
+---
+# The limit of a fixed-length rule
+
+`two_steps/2` describes exactly two edges.
+
+We could write a separate rule for three edges, then four.
+
+Can one definition describe every positive route length?
+
+---
+# A recursive idea
+
+There is a route from `X` to `Y` if there is a direct edge.
+
+There is also a route if an edge reaches some `Z` from which `Y` is reachable.
+
+The second case uses the relation we are defining.
+
+---
+# The base case 🏛️
+
+```prolog
+reachable(X, Y) :- edge(X, Y).
+```
+
+One edge already establishes reachability.
+
+This clause can succeed without another reachability call.
+
+---
+# The recursive case 🏛️
+
+```prolog
+reachable(X, Y) :-
+    edge(X, Z), reachable(Z, Y).
+```
+
+Take one edge, then establish a route from the new place.
+
+---
+# The complete definition
+
+```prolog
+reachable(X, Y) :- edge(X, Y).
+reachable(X, Y) :-
+    edge(X, Z), reachable(Z, Y).
+```
+
+These are alternative clauses for the same predicate.
+
+---
+# Why this describes routes
+
+The base clause establishes a route of length one.
+
+The recursive clause adds an edge before an existing route.
+
+Every finite, non-empty route can be decomposed in this way.
+
+---
+# Our definition of reachability
+
+**At least one edge must be traversed.**
+
+Revisiting a place is allowed by these rules.
+
+In graph terminology, the witness may therefore be a directed walk.
+
+---
+# Relation notation 🏛️
+
+If `R` is the edge relation, positive-length reachability is its transitive closure, `R⁺`.
+
+The reflexive transitive closure, `R*`, also includes zero-length routes.
+
+Our current program describes `R⁺`.
+
+---
+# Is every place reachable from itself? 💬
+
+```prolog
+?- reachable(a, a).
+```
+
+Use the original acyclic graph and our positive-length convention.
+
+---
+# Is every place reachable from itself?
+## contd.
+
+The answer is `false` in the original graph.
+
+No non-empty route returns from `a` to `a`.
+
+With a directed cycle, self-reachability can become true.
+
+---
+# One relation, several questions
+
+```prolog
+?- reachable(a, e).
+?- reachable(a, Destination).
+?- reachable(Start, e).
+```
+
+We can check a pair or search for endpoints.
+
+---
+# Following a proof 🔎
+
+```prolog
+?- reachable(a, e).
+```
+
+The route exists. How will Prolog find it?
+
+---
+# Following a proof
+## contd.
+
+The first clause asks for `edge(a, e)`.
+
+There is no matching fact.
+
+Prolog then tries the recursive clause.
+
+---
+# Following a proof
+## contd.
+
+The recursive clause supplies these goals:
+
+```prolog
+edge(a, Z), reachable(Z, e).
+```
+
+The first matching edge binds `Z = b`.
+
+---
+# Following a proof
+## contd.
+
+Now the remaining goal is `reachable(b, e)`.
+
+There is no direct edge from `b` to `e`.
+
+The recursive case follows the edge from `b` to `c`.
+
+---
+# A dead end
+
+The remaining goal becomes `reachable(c, e)`.
+
+`c` has no outgoing edges in our original graph.
+
+Both clauses fail for this goal.
+
+---
+# Backtracking to a choice
+
+The choices through `b` are exhausted.
+
+Prolog returns to `edge(a, Z)` and tries `Z = d`.
+
+Bindings from the abandoned branch no longer constrain this alternative.
+
+---
+# A successful alternative
+
+The new remaining goal is `reachable(d, e)`.
+
+Its base case matches the fact `edge(d, e)`.
+
+The original query succeeds through the route `a`, `d`, `e`.
+
+---
+# What the proof establishes
+
+We have found one witness for reachability.
+
+A successful answer need not describe every possible route.
+
+Requesting another answer continues the search for another proof.
+
+---
+# Variables belong to their invocation
+
+Each new use of a rule gets fresh variables.
+
+An inner rule's `Z` is separate from an outer rule's `Z`.
+
+Unification connects the appropriate arguments between calls.
+
+---
+# All destinations 🧪
+
+```prolog
+?- reachable(a, X).
+```
+
+Predict every answer using the original fact and clause order.
+
+---
+# All destinations
+## contd.
+
+The answers appear as `b`, `d`, `c`, `e`.
+
+The first clause supplies both direct neighbours.
+
+Then the second clause supplies the longer routes.
+
+---
+# Why `b` and `d` come first
+
+The first clause asks only for `edge(a, X)`.
+
+On backtracking, it supplies both matching edge facts.
+
+Only after that clause is exhausted does the next clause run.
+
+---
+# Why `c` and `e` follow
+
+The recursive clause first tries the edge to `b`.
+
+From `b`, it establishes reachability to `c`.
+
+It later tries the edge to `d`, which leads to `e`.
+
+---
+# The graph and the search
+
+The domain graph contains places and edges.
+
+The search explores goals, rule applications and alternatives.
+
+The same place or goal may occur repeatedly during the search.
+
+---
+# Ordinary Prolog search
+
+For these clauses, Prolog selects goals from left to right.
+
+It tries matching clauses in program order.
+
+It explores a branch before returning to its alternatives.
+
+---
+# A change in clause order
+
+```prolog
+recursive_first(X, Y) :-
+    edge(X, Z), recursive_first(Z, Y).
+recursive_first(X, Y) :- edge(X, Y).
+```
+
+This version tries the recursive clause first.
+
+---
+# A change in clause order 🧪
+## contd.
+
+```prolog
+?- recursive_first(a, X).
+```
+
+In our acyclic graph, does it finish? Which answers come first?
+
+---
+# A change in clause order
+## contd.
+
+It finishes, returning `c`, `e`, `b`, `d`.
+
+Routes of length two appear before direct neighbours.
+
+The query still has the same set of endpoint answers.
+
+---
+# The same relation, a different search
+
+Reordering these pure clauses preserves their logical meaning.
+
+It changes the procedure the interpreter follows.
+
+Answer order and termination require their own analysis.
+
+---
+# Does Prolog find the shortest route?
+
+Our recursive-first example already returns longer routes first.
+
+Ordinary depth-first search does not promise shortest routes.
+
+A search strategy is a substantive part of an algorithm.
+
+---
+# One new edge
+
+Return to the original `reachable/2` definition, with the base clause first.
+
+Add this fact to a copy of the original graph:
+
+```prolog
+edge(c, a).
+```
+
+---
+# What changed in the graph?
+
+There is now a cycle through `a`, `b`, `c`, and back to `a`.
+
+We can traverse that cycle repeatedly.
+
+The route from `a` through `d` to `e` still exists.
+
+---
+# A surprising prediction 💬
+
+```prolog
+?- reachable(a, e).
+```
+
+Will the same program still find the route?
+
+---
+# The search enters the cycle
+
+The direct-edge checks to `e` fail at `a`, `b` and `c`.
+
+The recursive goals are `reachable(a,e)`, then `reachable(b,e)`, then `reachable(c,e)`.
+
+The next call repeats `reachable(a,e)`.
+
+---
+# The untried alternative
+
+The branch through `b` keeps generating more work.
+
+Depth-first search never returns to the alternative edge from `a` to `d`.
+
+The route to `e` exists, but this query does not reach its proof.
+
+---
+# What does the loop mean?
+
+It does not establish that `e` is unreachable.
+
+It shows that this search procedure gets stuck on an infinite branch.
+
+An existing finite proof and a terminating search are different matters.
+
+---
+# Three observable outcomes
+
+Success supplies a proof, possibly with bindings.
+
+Finite failure exhausts the alternatives without finding a proof.
+
+Search may run forever before the first answer, or while seeking another answer.
+
+---
+# A bounded live demonstration 🎬
+
+In SWI-Prolog, run the cyclic example with a time limit:
+
+```prolog
+?- call_with_time_limit(1, reachable(a, e)).
+```
+
+The timeout raises `time_limit_exceeded`. It does not answer `false`.
+
+---
+# A base case is not a guarantee
+
+Our cyclic example already has a base case first.
+
+The search can repeatedly enter recursive calls whose base case fails.
+
+We must explain how the selected calls eventually stop or finish.
+
+---
+# Finite answers, infinite attempts
+
+This graph has five places, so there are at most 25 endpoint pairs.
+
+There are nevertheless arbitrarily long walks around the cycle.
+
+A naive search can repeat proof attempts without discovering new pairs.
+
+---
+# Ways to change the computation
+
+A search can track the places already visited on the current route.
+
+A tabled evaluator can reuse subgoals and their answers.
+
+These are different techniques with different information to maintain.
+
+---
+# A look ahead: tabling
+
+For this finite reachability problem, tabling can avoid endlessly re-expanding cycles.
+
+Repeated calls share recorded answers instead.
+
+We will keep the implementation details outside today's core exercise.
+
+---
+# Recursion and termination
+
+Recursion can describe a terminating computation.
+
+Our original acyclic graph gives terminating reachability queries.
+
+The rules, data, query and evaluation strategy all matter.
+
+---
+# Back to finite-state machines
+
+A fixed finite graph has a finite reachability relation.
+
+It is possible to precompute those reachable pairs.
+
+Using recursion here does not prove that this particular graph problem needs unbounded memory.
+
+---
+# A reverse question 🧪
+
+Return to the original acyclic graph.
+
+```prolog
+?- reachable(X, e).
+```
+
+Predict the endpoint bindings and their order.
+
+---
+# A reverse question
+## contd.
+
+The answers are `X = d`, then `X = a`.
+
+The first clause finds the direct predecessor `d`.
+
+The recursive clause establishes the longer route starting at `a`.
+
+---
+# Different proofs, the same answer 🧪
+
+Use the original acyclic graph, then add `edge(c, e).`.
+
+How many proofs establish `reachable(a, e)`?
+
+Write the route used by each proof.
+
+---
+# Different proofs, the same answer
+## contd.
+
+There are two proofs, using `a`, `b`, `c`, `e` and `a`, `d`, `e`.
+
+Both establish the same endpoint pair `(a, e)`.
+
+Ordinary search can return that answer twice.
+
+---
+# The answer stream 🧪
+
+Keep the acyclic graph with the added edge from `c` to `e`.
+
+```prolog
+?- reachable(a, X).
+```
+
+Predict the complete answer stream, including repetitions.
+
+---
+# The answer stream
+## contd.
+
+The stream is `b`, `d`, `c`, `e`, `e`.
+
+The two proofs of reachability to `e` survive separately in the search.
+
+A relation's set of pairs and an interpreter's answer stream are distinct.
+
+---
+# Explaining a computation 🧪
+
+Work in pairs. Choose one of today's queries.
+
+State the expected logical answer and trace the actual search.
+
+Explain where the search succeeds, finitely fails or repeats a goal. **8 minutes.**
+
+---
+# A model explanation
+
+For the cyclic query `reachable(a, e)`, a proof exists through `d`.
+
+The chosen search instead repeats calls through `a`, `b` and `c`.
+
+It never returns to the alternative through `d`.
+
+---
+# Before you leave 🧪
+
+- What makes a rule recursive?
+- Does a base clause guarantee termination?
+- Can one endpoint binding have several proofs?
+
+---
+# Before you leave
+## contd.
+
+- Its body calls the relation it defines, directly or indirectly.
+- No. The selected search may keep following an infinite branch.
+- Yes. Different routes can establish the same pair.
+
+---
+# Why Prolog belongs in this course
+
+We have made relations and rules executable.
+
+We have separated a program's logical meaning from its search behaviour.
+
+We can now explain why a computation succeeds, fails or loops.
+
+---
+# Connections we will use again
+
+Recursive definitions also appear in grammars and programs over structured data.
+
+Search order will matter when we compare ways of recognising input.
+
+Each later language or parser needs its own execution rules.
+
+---
+# Reading
+
+[Simply Logical: Logic Programming and Prolog](https://book.simply-logical.space/src/text/1_part_i/3.0.html)
+
+[Simply Logical: Recursion](https://book.simply-logical.space/src/text/1_part_i/1.2.html)
+
+Today's graphs and query exercises are our worked teaching examples.
+
+---
+# Demonstration references
+
+[SWI-Prolog: Time-limited calls](https://www.swi-prolog.org/pldoc/man?predicate=call_with_time_limit/2)
+
+[SWI-Prolog: Tabling and non-termination](https://www.swi-prolog.org/pldoc/man?section=tabling-non-termination)
+
+The timeout and tabling discussion use SWI-Prolog facilities.
+
+---
+# Questions 💬
+
+When does a logical description become an effective procedure?
+
+Which part of today's answer depended on the relation, and which on the search?
