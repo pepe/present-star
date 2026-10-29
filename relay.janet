@@ -14,9 +14,13 @@
   [:live])
 
 (defn live/mark
-  "Where the relay's view of the live slide stands: the tree it saw, and the revision."
+  ```
+  Where the relay's view of the live slide stands: the slide itself. A
+  follower is answered once the slide differs from the one it was told
+  of last, so a mark is compared by its contents.
+  ```
   [view]
-  [(view :projection/epoch) (get-in view [:projection/revisions :live])])
+  (view :live))
 
 (defr -:live/after
   ```
@@ -35,7 +39,7 @@
     (protect
       (produce/applied [(^notify/subscribe view chan ;followed)])
       (ev/with-deadline relay/wait
-        (while (= seen (live/mark view))
+        (while (deep= seen (live/mark view))
           (ev/take chan))))
     {:mark (live/mark view) :live (view :live)}))
 

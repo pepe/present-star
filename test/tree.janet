@@ -76,7 +76,6 @@
               "A deck without slides is refused")
   (assert-not (first (protect (:save-presentation t "../etc" one)))
               "An id naming another place is refused")
-  (def first-revision ((:snapshot t [:stage]) :revision))
 
   (assert (= :ok (:build-failed t "three" {:file "three.md" :line 4 :message "Oops"}))
           "A failed build is recorded")
@@ -110,8 +109,7 @@
   (assert ((:stage t) :presenting) "still presented")
 
   (let [snap (:snapshot t [:stage :live])]
-    (assert (string? (snap :epoch)) "A snapshot names the tree it saw")
-    (assert (> (snap :revision) first-revision) "and moves on with every change")
+    (assert (deep= @[:values] (keys snap)) "A snapshot is its values alone")
     (assert (= "three" (get-in snap [:values :stage :presentation]))
             "and carries what was asked"))
   (assert-not (first (protect (:snapshot t [:sessions]))) "Sessions are not projected")

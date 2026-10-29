@@ -13,16 +13,6 @@
   "Collections a peer may ask the tree to project in one snapshot."
   [:cap/session :presentations :errors :stage :live :notes :attending])
 
-(defn- revise
-  ```
-  Moves the view to its next revision, and returns the view.
-
-  A snapshot says which revision it saw, so whoever holds one can tell it
-  from an older one. Whatever changes what a snapshot would say moves it.
-  ```
-  [view]
-  (put view :projection/revision (inc (get view :projection/revision 0))))
-
 (defn live/of
   ```
   The shadow a watcher is given: the slide on the stage, and nothing of
@@ -98,8 +88,7 @@
   (put view :presentations presentations)
   (put view :stage (or stage false))
   (put view :live (or (live/of presentations stage) false))
-  (put view :notes (notes/projected (or (:load store :notes) @{})))
-  (revise view))
+  (put view :notes (notes/projected (or (:load store :notes) @{}))))
 
 (define-update EnsureNotes
   ```
@@ -193,8 +182,7 @@
   [id err]
   (make-event
     {:update (fn [_ {:view view}]
-               (put (view :errors) id err)
-               (revise view))
+               (put (view :errors) id err))
      :watch (^push :errors)}
     (. "build failed " id)))
 
@@ -256,8 +244,7 @@
   [from what]
   (make-event
     {:update (fn [_ {:view view}]
-               (put (view :attending) from (if what what nil))
-               (revise view))
+               (put (view :attending) from (if what what nil)))
      :watch (^push :attending)}
     (. "attending " from)))
 
@@ -296,10 +283,7 @@
   "Initializes view and puts it in the dyn"
   {:update
    (fn [_ state]
-     (put state :view (merge @{} view/empty {:errors @{} :sessions @{} :attending @{}}))
-     # A new view is a new lineage of revisions: whoever holds a snapshot of
-     # an older one must not take this one's for a later moment of it.
-     (put (state :view) :projection/epoch (aether/hex (os/cryptorand 16))))
+     (put state :view (merge @{} view/empty {:errors @{} :sessions @{} :attending @{}})))
    :watch RefreshView
    :effect (fn [_ {:view view} _]
              (setdyn :ctx ctx)
@@ -345,7 +329,6 @@
       (twm-tree/^session/save
         session
         (fn [state value]
-          (revise (state :view))
           ((=> :view :sessions (>put owner value)) state))
         (^push :cap/session))
       owner)))
@@ -358,17 +341,15 @@
 
 (defr -:snapshot
   ```
-  Returns one coherent, revisioned projection of the collections asked for.
-  Nothing here yields, so every value and the revision describe one state.
+  Returns one coherent projection of the collections asked for. Nothing
+  here yields, so every value describes one state.
   ```
   []
   (def [colls owner] args)
   (assert (and (indexed? colls)
                (all |(index-of $ collections/projected) colls))
           "Invalid snapshot collections")
-  {:epoch (view :projection/epoch)
-   :revision (get view :projection/revision 0)
-   :values (tabseq [coll :in colls]
+  {:values (tabseq [coll :in colls]
              coll (if (= coll :cap/session)
                     (twm-tree/session/cap (session/of view owner))
                     (get view coll)))})

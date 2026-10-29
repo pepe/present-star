@@ -168,10 +168,7 @@
             [true answer]
             (do (set mark (get answer :mark))
               (match (protect (record tree from (get answer :live)))
-                [false err] (produce (log name " could not record from " from ": " err)))
-              # An answer with nothing to ask after would be asked again at
-              # once, and again.
-              (unless mark (ev/sleep 1)))
+                [false err] (produce (log name " could not record from " from ": " err))))
             [false err]
             (do (produce (log name " cannot follow " from ": " err))
               (when relay (protect (:close relay)))

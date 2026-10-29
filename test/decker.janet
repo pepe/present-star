@@ -65,10 +65,11 @@
 (assert (deck "elsewhere--course") "but a recording is not")
 (assert (nil? (deck "README")) "The README is left alone")
 
-(let [before ((:snapshot tree [:presentations]) :revision)]
-  (ev/sleep 0.5)
-  (assert (= before ((:snapshot tree [:presentations]) :revision))
-          "A deck nobody touched is not built again"))
+# What the tree holds of a deck whose file nobody touched is left as it is:
+# the file is not built, and the tree not told, again.
+(:save-presentation tree "intro" (merge (deck "intro") {:title "Held"}))
+(ev/sleep 0.5)
+(assert (= "Held" ((deck "intro") :title)) "A deck nobody touched is not built again")
 
 (write "intro.md" "title: The Intro" "---" "## One" "---" "## Two" "---" "## Three")
 (assert (eventually |(= 3 (length ((deck "intro") :slides)))) "A saved change reaches the tree")
