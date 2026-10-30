@@ -35,12 +35,13 @@
   ```
   [_ {:host host :env env :repo repo :janet-source janet-source
       :socket-root socket-root
+      :environment ep :supervised supervised
       :build-path bp :data-path dp :release-path rp} _]
   (let [rbp (path/posix/join "/" ;(butlast (path/parts bp)))
         sbp (path/posix/join rbp "spork")
         conf (jdn/render compile-config)
         conf-path (path/posix/join bp "conf.jdn")
-        activate [". ./prod/bin/activate"]]
+        activate (if ep [(string ". " ep "/bin/activate")] [". ./prod/bin/activate"])]
     # Before anything is removed: a thicket whose sockets have nowhere to
     # go would come up with every peer refused.
     (when socket-root
@@ -54,7 +55,9 @@
     (exec
       ;(ssh-cmds host
                  [:umask "077"]
-                 [:rm "-rf" bp] [:rm "-rf" rp] [:rm "-rf" sbp]
+                 [:rm "-rf" bp] [:rm "-rf" rp]
+                 # A prepared environment has no spork of its own to install.
+                 ;(if ep [] [[:rm "-rf" sbp]])
                  [:mkdir :-p rbp] [:mkdir :-p rp] [:mkdir :-p dp]
                  [:chmod "700" rp dp]))
     (eprint " done")
@@ -63,9 +66,13 @@
       ;(ssh-cmds host
                  [:umask "077"]
                  [:git :clone "--depth=1" repo bp]
-                 [:git :clone "--depth=1"
-                  "https://github.com/janet-lang/spork" sbp]))
+                 ;(if ep [] [[:git :clone "--depth=1" "https://github.com/janet-lang/spork" sbp]])))
     (eprint "------------ Ensure environment")
+    # Given a prepared :environment -- the ToTs's, shared -- the thicket
+    # runs in it rather than in one of its own, which is not built here.
+    (if ep
+      (assert (zero? (exec ;(ssh-cmds host [:test "-f" (path/posix/join ep "ready.jdn")])))
+              (string "the environment " ep " is not ready; it is prepared before its thickets"))
     (exec
       ;(ssh-cmds host
                  [:umask "077"]
@@ -76,7 +83,7 @@
                  [:janet "--install" sbp]
                  [:janet-pm :install "jhydro"]
                  [:janet-pm :install "https://git.sr.ht/~pepe/gp"]
-                 [:janet-pm :install "https://git.sr.ht/~pepe/twm"]))
+                 [:janet-pm :install "https://git.sr.ht/~pepe/twm"])))
     (eprin "------------ Upload configuration")
     # Copied as a file rather than written through a heredoc inside a shell
     # command: the configuration carries a password hash full of
@@ -94,13 +101,18 @@
                      [:umask "077"] [:cd bp] activate
                      [:janet-pm :quickbin "bin/dm.janet" "dm"]
                      [:mv "dm" rp]))
-    (eprint "------------ Run demiurge")
-    (exec ;(ssh-cmds host
-                     [:umask "077"] [:cd bp] activate
-                     [:nohup (path/posix/join bp env "bin" "janet")
-                      (path/posix/join bp "/demiurge.janet") ">>"
-                      (path/posix/join dp "/demiurge.log")
-                      "2>&1 &"]))))
+    # A :supervised thicket is raised by its parent, not here.
+    (if supervised
+      (eprint "------------ The demiurge is left to its parent to raise")
+      (do
+        (eprint "------------ Run demiurge")
+        (exec ;(ssh-cmds host
+                         [:umask "077"] [:cd bp] activate
+                         [:nohup (if ep (path/posix/join ep "bin" "janet")
+                                   (path/posix/join bp env "bin" "janet"))
+                          (path/posix/join bp "/demiurge.janet") ">>"
+                          (path/posix/join dp "/demiurge.log")
+                          "2>&1 &"]))))))
 
 (define-effect EnsureData
   "Makes the data path, which a fresh checkout does not have yet."
