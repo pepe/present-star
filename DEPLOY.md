@@ -29,8 +29,10 @@ which `pe` has through `doas`.
    `github.com/pepe/present-star` is private while deploy has no key for
    it. Either make the repository public, or give deploy a read-only deploy
    key and set `:repo "git@github.com:pepe/present-star.git"`.
-2. **DNS.** An A record for `decks.pospisil.work` and `show.pospisil.work`,
-   to the box, and no AAAA, as every name of the box has none. The box
+2. **DNS.** The wildcard A record `*.pospisil.work` names the box for
+   `decks.pospisil.work` and `show.pospisil.work`, and no AAAA, as every
+   name of the box has none. An explicit record for either name would take
+   its place, so it must point to the box as well. The box
    refuses any name without a site of its own: `00-default.conf` answers
    it with 404, and refuses the TLS handshake.
 3. **The socket directories.** The bootstrap makes `rpc/` itself and
