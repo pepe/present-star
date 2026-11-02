@@ -5,8 +5,8 @@ interstudy, metabolon and pacts:
 
 | Name | Door | Where on the box |
 |---|---|---|
-| `decks.pan.earth` | the lecturer: presenter, held by presenter/sentry | `/srv/run/present-star/http/presenter.sock` |
-| `show.pan.earth` | the students: watcher | `/srv/run/present-star/http/watcher.sock` |
+| `decks.pospisil.work` | the lecturer: presenter, held by presenter/sentry | `/srv/run/present-star/http/presenter.sock` |
+| `show.pospisil.work` | the students: watcher | `/srv/run/present-star/http/watcher.sock` |
 | mycelium | demiurge, tree, decker, presenter, presenter/sentry, watcher, relay, recorder | `/srv/run/present-star/rpc/<name>.sock` |
 | relay | other thickets, by their public keys | 4851, open |
 
@@ -29,11 +29,10 @@ which `pe` has through `doas`.
    `github.com/pepe/present-star` is private while deploy has no key for
    it. Either make the repository public, or give deploy a read-only deploy
    key and set `:repo "git@github.com:pepe/present-star.git"`.
-2. **DNS.** `decks.pan.earth` and `show.pan.earth` resolve to nothing yet.
-   Either an A record for each, or one `*.pan.earth` record for all -- the
-   box is ready for a wildcard: `00-default.conf` answers any name without
-   a site of its own with 404, and refuses the TLS handshake. Names with
-   records of their own, `interstudy.pan.earth` and the rest, keep them.
+2. **DNS.** An A record for `decks.pospisil.work` and `show.pospisil.work`,
+   to the box, and no AAAA, as every name of the box has none. The box
+   refuses any name without a site of its own: `00-default.conf` answers
+   it with 404, and refuses the TLS handshake.
 3. **The socket directories.** The bootstrap makes `rpc/` itself and
    only checks `http/`, which needs root once to get nginx's group; under
    `/srv/run` both outlive a reboot:
@@ -83,11 +82,14 @@ ssh deploy@pe tail -n 30 /srv/data/present-star/demiurge.log
 ## 3. nginx
 
 One file a name, as the box keeps them:
-[`decks.pan.earth.conf`](deploy/nginx/decks.pan.earth.conf) and
-[`show.pan.earth.conf`](deploy/nginx/show.pan.earth.conf). Each sends its
-name to its door's socket in `/srv/run/present-star/http`, and keeps the
-live slide's stream unbuffered and open for a whole lecture. Switch nginx
-to the sockets only after a release, when both exist.
+[`decks.pospisil.work.conf`](deploy/nginx/decks.pospisil.work.conf) and
+[`show.pospisil.work.conf`](deploy/nginx/show.pospisil.work.conf). Each
+sends its name to its door's socket in `/srv/run/present-star/http`, and
+keeps the live slide's stream unbuffered and open for a whole lecture.
+Switch nginx to the sockets only after a release, when both exist. What
+the lecturer's door is limited by is defined once, for every name that
+opens it, in
+[`00-present-star-limits.conf`](deploy/nginx/00-present-star-limits.conf).
 
 The lecturer's door is also limited. The sentry takes a POST to any path it
 does not route as a sign-in, so nginx refuses every POST but `/`, where the
@@ -100,11 +102,31 @@ in its error log. certbot leaves all of it alone, but on the box the file
 is certbot's, so change it there by hand.
 
 ```
-scp deploy/nginx/decks.pan.earth.conf deploy/nginx/show.pan.earth.conf pe:/tmp/
-ssh pe "doas mv /tmp/decks.pan.earth.conf /tmp/show.pan.earth.conf /etc/nginx/http.d/ &&
-        doas chown root:root /etc/nginx/http.d/decks.pan.earth.conf /etc/nginx/http.d/show.pan.earth.conf &&
+cd deploy/nginx
+scp 00-present-star-limits.conf decks.pospisil.work.conf show.pospisil.work.conf pe:/tmp/
+ssh pe "cd /tmp && doas install -o root -g root -m 644 00-present-star-limits.conf \
+          decks.pospisil.work.conf show.pospisil.work.conf /etc/nginx/http.d/ &&
         doas nginx -t && doas nginx -s reload"
 ```
+
+### The old addresses
+
+Until November 2026 the doors were `decks.pan.earth` and `show.pan.earth`,
+and their links are still out there: in slides, in mails, on phones. Both
+names keep their records and their certificates, and
+[`decks.pan.earth.conf`](deploy/nginx/decks.pan.earth.conf) and
+[`show.pan.earth.conf`](deploy/nginx/show.pan.earth.conf) answer them:
+
+- anybody arriving is sent to the same path at the new name, with `308`,
+  which keeps the method;
+- what Datastar asks of a page already open at an old name -- a request
+  with a `Datastar-Request` header or a `datastar` query, the live stream a
+  student holds, the lecturer's moves -- is answered where it is, under the
+  same limits. Datastar asks with `fetch`, which would follow a redirect
+  itself and never move the page, so a lecture that is on is not cut.
+
+The relay is plain TCP on `0.0.0.0:4851`, so it answers at any name of the
+box; a follower that dials `pan.earth:4851` keeps working.
 
 ## 4. Certificates
 
@@ -112,8 +134,8 @@ Once both names resolve, one certificate each, as the other sites have;
 certbot adds the 443 listener and the redirect to each file:
 
 ```
-ssh -t pe "doas certbot --nginx -d decks.pan.earth"
-ssh -t pe "doas certbot --nginx -d show.pan.earth"
+ssh -t pe "doas certbot --nginx -d decks.pospisil.work"
+ssh -t pe "doas certbot --nginx -d show.pospisil.work"
 ```
 
 `/etc/periodic/daily/do-certbot` renews them with the rest.
@@ -128,10 +150,10 @@ over HTTPS.
 
 ## 5. See it work
 
-- `https://show.pan.earth` says *Waiting for the lecture*.
-- `https://decks.pan.earth` asks for the password, and opens the presenter.
+- `https://show.pospisil.work` says *Waiting for the lecture*.
+- `https://decks.pospisil.work` asks for the password, and opens the presenter.
 - *Present* a deck: the students' page follows, slide by slide.
-- The stream is not buffered: `curl -N https://show.pan.earth/content`
+- The stream is not buffered: `curl -N https://show.pospisil.work/content`
   prints the waiting slide at once and stays open.
 
 ## 6. Surviving a reboot

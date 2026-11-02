@@ -1,5 +1,5 @@
-# The thicket as it lives on pan.earth: the lecturer at decks.pan.earth,
-# the students at show.pan.earth. Copy it to a gitignored
+# The thicket as it lives on the box: the lecturer at decks.pospisil.work,
+# the students at show.pospisil.work. Copy it to a gitignored
 # `conf.show.pan.earth.jdn`, put fresh secrets in, and bootstrap with
 #
 #   CONF=conf.show.pan.earth.jdn janet demiurge.janet bootstrap
@@ -97,16 +97,16 @@
    :presenter
    {:http "localhost:7880"
     :entrance true
-    :cookie-host "decks.pan.earth"
-    :address "https://decks.pan.earth"
+    :cookie-host "decks.pospisil.work"
+    :address "https://decks.pospisil.work"
     :static true
     :public "public"
     :neighbors [:watcher]}
    # The students' door: the short address, open to everyone.
    :watcher
    {:http "localhost:7881"
-    :cookie-host "show.pan.earth"
-    :address "https://show.pan.earth"
+    :cookie-host "show.pospisil.work"
+    :address "https://show.pospisil.work"
     :static true
     :public "public"}
    # The relay's door, for other thickets rather than browsers: an

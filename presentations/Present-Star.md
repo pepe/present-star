@@ -33,4 +33,4 @@ Fenced blocks keep their indentation, and a `---` inside them is code.
 * Every slide appears there as you move
 * `f` makes it full screen, for the projector
 ---
-# https://show.pan.earth
+# https://show.pospisil.work

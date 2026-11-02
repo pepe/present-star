@@ -173,11 +173,13 @@ cannot run on its own. The test password is `testist`. After changing
 `test/conf.test.jdn`, regenerate the per-symbiont fixtures with
 `janet bin/test-confs.janet`.
 
-## pan.earth
+## On the box
 
-The lecturer's door is `decks.pan.earth`, the students' `show.pan.earth`.
-Their configuration is `conf.show.pan.earth.jdn`, gitignored, with the real
-secrets. The decks travel with the code: on the box the decker reads
+The lecturer's door is `decks.pospisil.work`, the students'
+`show.pospisil.work`; the old `decks.pan.earth` and `show.pan.earth` send
+anybody arriving there (see [DEPLOY.md](DEPLOY.md)). The thicket is the
+tenant `present-star` of the ToT `tot.pospisil.work`, whose authored
+configuration, with the real secrets, derives its `conf.jdn`. The decks travel with the code: on the box the decker reads
 `presentations/` of the checkout, so a pushed deck is published by `dm pull`.
 
 [DEPLOY.md](DEPLOY.md) takes the box from nothing to a lecture: the

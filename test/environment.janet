@@ -24,7 +24,7 @@
         "The presenter is guarded by the sentry")
 
 (let [example (parse (slurp "conf.example.jdn"))]
-  (assert (config/base? example) "The show.pan.earth example has twm's shape")
+  (assert (config/base? example) "The example of the thicket on the box has twm's shape")
   (assert (= example (config/guardians! example)) "and is wired to hand its door back"))
 
 (defn refused [config]
