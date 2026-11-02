@@ -820,3 +820,523 @@ The same meaning of pending, confirmed, rejected and cancelled.
 Which modelling question does your diagram answer?
 
 Which important question does it leave to another view?
+title: Docker — Our Database Workbench
+author: Josef Pospíšil
+date: 2026-11-03
+---
+# Docker: Our Database Workbench
+
+EIED5E · Formal Techniques of Data Modelling
+
+Seminar · 3 November 2026
+
+PostgreSQL and Neo4j
+
+---
+# Today’s result
+
+Start two database services from one configuration.
+
+Ask the same enrollment question in SQL and Cypher.
+
+Test whether the data survives container recreation.
+
+---
+# Image, container and volume
+
+An **image** is a packaged template used to create containers.
+
+A **container** is an isolated runtime instance.
+
+A **volume** holds data beyond one container’s lifetime.
+
+---
+# Where should the database live? 💬
+
+We remove a database container after adding a student.
+
+Where must its data be stored if the next container should find that student?
+
+---
+# Where should the database live?
+## contd.
+
+In persistent storage attached to the new container.
+
+Today we use Docker-managed named volumes.
+
+The volume survives ordinary container removal.
+
+---
+# Compose describes our environment
+
+`compose.yaml` names the services, images, ports and volumes.
+
+Docker Desktop manages the local Docker environment.
+
+PowerShell ISE is our available command host.
+
+---
+# The PostgreSQL service
+
+```yaml
+services:
+  postgres:
+    image: postgres:17-bookworm
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+```
+
+The complete file also supplies credentials and a health check.
+
+---
+# The Neo4j service
+
+```yaml
+services:
+  neo4j:
+    image: neo4j:5.26-community
+    ports:
+      - "127.0.0.1:7474:7474"
+      - "127.0.0.1:7687:7687"
+    volumes:
+      - neo4j_data:/data
+```
+
+---
+# Which port belongs to the host? 💬
+
+```yaml
+- "127.0.0.1:15432:5432"
+```
+
+Which port would a PostgreSQL client on your computer use?
+
+Which port does PostgreSQL still use inside its container?
+
+---
+# Which port belongs to the host?
+## contd.
+
+The host client uses `localhost:15432`.
+
+PostgreSQL still listens on `5432` inside the container.
+
+Our supplied configuration uses host port `5432` too.
+
+---
+# Starting the lab 🧪
+
+Open Docker Desktop and wait for the engine.
+
+Open the extracted lab folder in your permitted command host.
+
+```powershell
+docker version
+docker compose version
+docker compose up -d
+```
+
+Images should already be downloaded for class.
+
+---
+# Checking readiness
+
+```powershell
+docker compose ps
+docker compose logs --tail 30 postgres
+docker compose logs --tail 30 neo4j
+```
+
+Wait for both database services to report healthy.
+
+`-d` lets the services run while the command host returns.
+
+---
+# A one-off container 🎬
+
+```powershell
+docker run --rm postgres:17-bookworm psql --version
+```
+
+A new temporary container prints the client version and exits.
+
+`--rm` removes that temporary container.
+
+The Compose database remains separate.
+
+---
+# The same enrollment system
+
+Student and Course retain their meanings.
+
+CourseOffering identifies a particular delivery.
+
+Enrollment has its own identifier and status.
+
+The two databases hold the same sample facts.
+
+---
+# Loading PostgreSQL 🧪
+
+Follow command-sheet section 3 for `sql/seed.sql`.
+
+The file creates the `lab` schema and sample records.
+
+We copy the file into the running container and run it with `psql`.
+
+ISE uses file-based commands without an interactive console.
+
+---
+# Our first SQL query 🧪
+
+List student identifiers and names.
+
+Sort by student identifier.
+
+Edit `sql/my-query.sql`, then copy and execute it using command-sheet section 4.
+
+---
+# Our first SQL query
+## contd.
+
+```sql
+SELECT student_id, name
+FROM lab.student
+ORDER BY student_id;
+```
+
+`s01 Ada` · `s02 Ben` · `s03 Cyd`
+
+---
+# Confirmed enrollments 🧪
+
+Which students have confirmed enrollments?
+
+Return student name, offering identifier and course title.
+
+Follow the links through Enrollment and CourseOffering.
+
+Predict the rows before running the query.
+
+---
+# Confirmed enrollments
+## contd.
+
+```sql
+SELECT s.name, o.offering_id, c.title
+FROM lab.student s
+JOIN lab.enrollment e ON e.student_id = s.student_id
+JOIN lab.course_offering o ON o.offering_id = e.offering_id
+JOIN lab.course c ON c.course_code = o.course_code
+WHERE e.status = 'confirmed'
+ORDER BY s.name, o.offering_id;
+```
+
+Ada: FM26A and TI26A. Ben’s request is pending.
+
+---
+# Loading Neo4j 🧪
+
+Swap the person operating the computer.
+
+Load `cypher/seed.cypher` using command-sheet section 3.
+
+Open `http://localhost:7474/browser/`.
+
+Connect to `bolt://localhost:7687` with the supplied credentials.
+
+---
+# Exploring the graph
+
+```cypher
+MATCH p=(n:Lab)-[r]->(m:Lab) RETURN p;
+```
+
+Find Student, Enrollment, CourseOffering and Course nodes.
+
+Follow HAS_ENROLLMENT, FOR_OFFERING and OF_COURSE links.
+
+The screen position of a node has no domain meaning.
+
+---
+# Our first Cypher query 🧪
+
+List student identifiers and names.
+
+Sort by student identifier.
+
+Run a query in Browser, then execute the starter query file through ISE.
+
+---
+# Our first Cypher query
+## contd.
+
+```cypher
+MATCH (s:Student:Lab)
+RETURN s.studentId AS student_id, s.name AS name
+ORDER BY student_id;
+```
+
+`s01 Ada` · `s02 Ben` · `s03 Cyd`
+
+---
+# The same confirmed-enrollment question 🧪
+
+Find the confirmed Enrollment nodes.
+
+Follow each one back to its Student and forward to its Offering and Course.
+
+Predict whether the returned facts should differ from SQL.
+
+---
+# The same confirmed-enrollment question
+## contd.
+
+```cypher
+MATCH (s:Student:Lab)-[:HAS_ENROLLMENT]->
+      (e:Enrollment:Lab {status:'confirmed'})
+      -[:FOR_OFFERING]->(o:CourseOffering:Lab)
+      -[:OF_COURSE]->(c:Course:Lab)
+RETURN s.name AS name, o.offeringId AS offering_id,
+       c.title AS title
+ORDER BY name, offering_id;
+```
+
+The same two rows for Ada.
+
+---
+# What happens after down? 💬
+
+We add student Daria to each database.
+
+Then we run `docker compose down` and `docker compose up -d`.
+
+Will Daria still exist? Explain your prediction.
+
+---
+# What happens after down?
+## contd.
+
+Ordinary `down` removes the project’s containers and network.
+
+Named volumes remain.
+
+The next containers attach those volumes and find the stored data.
+
+Let’s test that prediction.
+
+---
+# Adding our persistence marker 🧪
+
+Run both `persistence-add` files using command-sheet section 6.
+
+Each adds `s04 Daria` without duplicating the record if repeated.
+
+Check the output before removing the containers.
+
+---
+# Recreating the containers 🧪
+
+```powershell
+docker compose --profile web down
+docker compose up -d
+docker compose ps
+```
+
+Wait until both databases are healthy again.
+
+Keep the named volumes. Do not rerun the seeds.
+
+---
+# Checking the stored data 🧪
+
+Copy and run both `persistence-check` files.
+
+Both should return `s04 Daria`.
+
+The old `/tmp` query copies disappeared with the old containers.
+
+The database records stayed in their named volumes.
+
+---
+# What does copying the YAML reproduce?
+
+The configuration describes how to start the environment.
+
+Our seed files reproduce the sample data.
+
+Existing database volumes stay with this Docker installation.
+
+Putting YAML on H: does not move those volumes to H:.
+
+---
+# What does localhost mean? 💬
+
+Your browser runs on the host computer.
+
+Optional Adminer runs in its own container.
+
+Should both use `localhost` to reach PostgreSQL?
+
+---
+# What does localhost mean?
+## contd.
+
+The host PostgreSQL client uses `localhost:5432`.
+
+Adminer uses `postgres:5432`, the service name on the Compose network.
+
+Inside Adminer’s container, localhost would refer to Adminer’s container.
+
+---
+# Before you leave 🧪
+
+Save your SQL and Cypher query files.
+
+Show that Daria survived in both databases, or describe the precise obstacle.
+
+Explain image, container and volume in one sentence.
+
+Finish with ordinary `docker compose --profile web down`.
+
+---
+# Extension: students without enrollments 🧪
+
+Find students with no Enrollment record at all.
+
+Does Ben qualify because his record is pending?
+
+Use the original seed fixture for the following answers.
+
+---
+# Students without enrollments: SQL
+## contd.
+
+```sql
+SELECT s.student_id, s.name
+FROM lab.student s
+WHERE NOT EXISTS (
+  SELECT 1 FROM lab.enrollment e
+  WHERE e.student_id = s.student_id
+)
+ORDER BY s.student_id;
+```
+
+Only Cyd. Ben has a pending record.
+
+---
+# Students without enrollments: Cypher
+
+```cypher
+MATCH (s:Student:Lab)
+WHERE NOT EXISTS {
+  MATCH (s)-[:HAS_ENROLLMENT]->(:Enrollment:Lab)
+}
+RETURN s.studentId AS student_id, s.name AS name
+ORDER BY student_id;
+```
+
+Only Cyd in the original fixture.
+
+---
+# Extension: every offering 🧪
+
+Show each offering’s capacity and confirmed enrollment count.
+
+Include offerings with no enrollments.
+
+TI26B has capacity zero and no enrollment records.
+
+What should its count be?
+
+---
+# Every offering: SQL
+## contd.
+
+```sql
+SELECT o.offering_id, o.capacity,
+       COUNT(e.enrollment_id) AS confirmed_count
+FROM lab.course_offering o
+LEFT JOIN lab.enrollment e
+  ON e.offering_id = o.offering_id
+ AND e.status = 'confirmed'
+GROUP BY o.offering_id, o.capacity
+ORDER BY o.offering_id;
+```
+
+FM26A: 1 · TI26A: 1 · TI26B: 0
+
+---
+# Every offering: Cypher
+
+```cypher
+MATCH (o:CourseOffering:Lab)
+OPTIONAL MATCH
+  (e:Enrollment:Lab {status:'confirmed'})
+  -[:FOR_OFFERING]->(o)
+RETURN o.offeringId AS offering_id,
+       o.capacity AS capacity, count(e) AS confirmed_count
+ORDER BY offering_id;
+```
+
+The optional match preserves offerings with no matching enrollment.
+
+---
+# Which constraints do we enforce?
+
+SQL enforces identifiers, foreign keys, valid statuses, nonnegative capacity and Student–Offering uniqueness.
+
+The graph setup enforces unique node identifiers.
+
+It does not automatically enforce the same relationship rules.
+
+Neither setup implements the approval transaction or its capacity check.
+
+---
+# A duplicate record 🎬
+
+The optional SQL file attempts a second Enrollment for `s01` and `TI26A`.
+
+It uses a new Enrollment identifier.
+
+The unique Student–Offering pair constraint still rejects it.
+
+Run this expected-error demonstration separately.
+
+---
+# One database at a time
+
+The root configuration is our classroom path.
+
+Standalone Compose files are supplied under `postgres/` and `neo4j/`.
+
+They use separate project volumes and the same host ports.
+
+Stop one project before starting an overlapping alternative.
+
+---
+# Where is the Dockerfile?
+
+Today we use existing database images.
+
+A Dockerfile describes how to build a custom image.
+
+Compose describes how our services run together.
+
+Running a supplied image does not require writing a Dockerfile.
+
+---
+# References
+
+[Docker Compose](https://docs.docker.com/compose/)
+
+[PostgreSQL image](https://hub.docker.com/_/postgres) · [Neo4j image](https://hub.docker.com/_/neo4j)
+
+[Compose exec](https://docs.docker.com/reference/cli/docker/compose/exec/) · [Compose cp](https://docs.docker.com/reference/cli/docker/compose/cp/)
+
+[PowerShell ISE console limitations](https://devblogs.microsoft.com/powershell/console-application-non-support-in-the-ise/)
+
+Full references and commands accompany the lab.
