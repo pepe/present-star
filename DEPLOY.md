@@ -198,11 +198,15 @@ so the bootstrap builds no `prod` environment and starts no demiurge.
   step below is for a thicket with a `prod` of its own: here a new gp or
   twm is a new environment, under a new name, named in both configs.
 - **`dm`** is `bin/dm.janet` quickbinned by the bootstrap, and nothing else
-  builds it, neither a release nor the ToT. Its door and psk are compiled
-  in, so once either changes the demiurge drops its handshake, and `dm`
-  dies with `bad slot #2 … got nil in jhydro/kx/xx3`: the reply that never
-  came, not a missing key. Build it again in the environment, as the
-  bootstrap does; no peer notices:
+  builds it, neither a release nor the ToT. Only the path of the
+  configuration it was built beside is compiled in,
+  `/srv/src/present-star/conf.jdn`, and it reads the demiurge's door and
+  psk from there each time it runs, so a rotated psk reaches it at once.
+  Until 3 November they were compiled in, and a `dm` older than the psk
+  died with `bad slot #2 … got nil in jhydro/kx/xx3`: the demiurge's reply
+  that never came, not a missing key. A new `bin/dm.janet`, or a new
+  environment, is built in the environment as the bootstrap does; no peer
+  notices:
   ```
   ssh deploy@pe "umask 077; cd /srv/src/present-star && . /srv/env/pan-earth-v6/bin/activate &&
                  janet-pm quickbin bin/dm.janet dm.new && mv dm.new /srv/exe/present-star/dm"
