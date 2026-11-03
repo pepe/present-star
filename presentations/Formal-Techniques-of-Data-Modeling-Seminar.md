@@ -932,6 +932,8 @@ Our `compose.yaml` maps host `5432` to container `5432`, so the numbers match.
 ---
 # Starting the lab 🧪
 
+The lab is at [github.com/pepe/culs-docker-lab](https://github.com/pepe/culs-docker-lab): clone it or download its ZIP.
+
 Open Docker Desktop and wait for the engine.
 
 In ISE, `Set-Location` to the extracted lab folder (command-sheet section 1).
