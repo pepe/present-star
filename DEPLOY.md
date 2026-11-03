@@ -160,21 +160,15 @@ over HTTPS.
 
 ## 6. Surviving a reboot
 
-[`deploy/thickets.start`](deploy/thickets.start) is the box's
-`/etc/local.d/thickets.start`, run by OpenRC's `local` service at boot. It
-raises every thicket on the box -- interstudy, metabolon, metabolon-staging
-and present-star -- each demiurge as deploy, with umask 077, its own
-environment and absolute paths, and then asks it to `run-peers`. A thicket
-whose demiurge already answers is left alone, and naming thickets raises
-only those:
+The OpenRC service `tots` is in the box's default runlevel. At boot it
+raises the ToTs, and they raise present-star's demiurge and ask it to
+`run-peers`, as *Supervised* says; present-star installs nothing for it.
 
-```
-ssh pe doas /etc/local.d/thickets.start present-star
-```
-
-What it did is in syslog: `doas grep ' thickets:' /var/log/messages`. A new
-thicket on the box is one more line in its list. busybox `crond` on the box
-knows no `@reboot`, which is why this is not a crontab.
+Until November 2026 [`deploy/thickets.start`](deploy/thickets.start) did
+it, as `/etc/local.d/thickets.start` run by OpenRC's `local` service: each
+demiurge raised as deploy from its checkout's `prod`, then asked to
+`run-peers`. It is no longer on the box, and it would leave present-star
+down there, for want of a `prod`.
 
 ## Supervised
 
@@ -189,14 +183,11 @@ so the bootstrap builds no `prod` environment and starts no demiurge.
   `conf.jdn`, into `/srv/data/present-star/demiurge.log`. It asks it to
   `run-peers` each time it is ready, and raises it again when it exits, so
   `dm stop` stops nothing for long and nobody starts it by hand.
-  `/etc/local.d/thickets.start` is gone from the box: `tots` raises
-  everything at boot.
 - **The environment**, `/srv/env/pan-earth-v6`, is shared with the box's
   other thickets and prepared once by the ToT (`/srv/src/tot/environment.janet`):
   `ready.jdn` there says it is, `manifest.jdn` which Janet, spork, jhydro,
-  gp and twm it holds. Nothing is installed into it, so the *gp or twm*
-  step below is for a thicket with a `prod` of its own: here a new gp or
-  twm is a new environment, under a new name, named in both configs.
+  gp and twm it holds. Nothing is installed into it: a new gp or twm is a
+  new environment, under a new name, named in both configs.
 - **`dm`** is `bin/dm.janet` quickbinned by the bootstrap, and nothing else
   builds it, neither a release nor the ToT. Only the path of the
   configuration it was built beside is compiled in,
@@ -211,7 +202,7 @@ so the bootstrap builds no `prod` environment and starts no demiurge.
   ssh deploy@pe "umask 077; cd /srv/src/present-star && . /srv/env/pan-earth-v6/bin/activate &&
                  janet-pm quickbin bin/dm.janet dm.new && mv dm.new /srv/exe/present-star/dm"
   ```
-  Meanwhile the ToT's own client asks the same through the ToT:
+  The ToT's own client asks the same through the ToT:
   ```
   ssh deploy@pe "cd /srv/src/tot && . /srv/env/pan-earth-v6/bin/activate &&
                  CONF=conf.jdn janet tdm.janet tot.pospisil.work/present-star state"
@@ -229,24 +220,36 @@ so the bootstrap builds no `prod` environment and starts no demiurge.
   second, and every open page shows the new version. No release.
 - **Code.** Push, `dm pull`, `dm release`. A release restarts the peers that
   were running, which signs the lecturer out.
-- **gp or twm.** The peers are built against the gp and twm installed in the
-  box's `prod` environment, so a change to either is installed there before
-  the release:
-  ```
-  ssh deploy@pe "umask 077; cd /srv/src/present-star && . ./prod/bin/activate &&
-                 janet-pm install https://git.sr.ht/~pepe/gp"
-  ```
+- **gp or twm.** The peers are built against the gp and twm of the
+  environment the demiurge runs in, `/srv/env/pan-earth-v6`, which is
+  shared and never installed into. A new gp or twm is a new environment,
+  prepared and switched to on the ToT's side (`/srv/src/tot`); then
+  `dm release`, and `dm` built again in it, as *Supervised* says.
 - **A follower.** Another thicket may follow the lectures once its public key
   is in the relay's `:followers`, and this one follows theirs once their key
   is in the recorder's `:follows`. Both are config: see below.
-- **Config, or the password.** A new password is `janet bin/secrets.janet
-  <password>` into `conf.show.pan.earth.jdn`. Peers compile their config in,
-  so: `scp` it as `deploy@pe:/srv/src/present-star/conf.jdn` →
-  `dm stop-peers` → `dm stop` → start the demiurge as `deploy/crontab` does
-  → `dm release` → `dm run-peers`.
-- **Stopping.** `dm stop-peers`, then `dm stop`, until no process runs
-  from `/srv/exe/present-star` or `/srv/src/present-star/prod/bin/janet`.
-  Bootstrapping again does not stop an old demiurge, so stop first.
+- **Config, or the password.** The configuration is the box's
+  `/srv/src/present-star/conf.jdn`. Since November 2026 it is changed there,
+  each time beside a copy, `conf.jdn.bak-<when>-<why>`, and
+  `conf.show.pan.earth.jdn` has not followed: bring it down from the box
+  before a bootstrap uploads it again. A new password is `janet
+  bin/secrets.janet <password>` into it. Peers compile their config in, and
+  a release asked with `reconfigure` reads it again, builds them from it
+  and raises them under it, which signs the lecturer out:
+  ```
+  ssh deploy@pe /srv/exe/present-star/dm release reconfigure
+  ```
+  A new mycelium `:psk` is taken the same way, but `dm` reads `conf.jdn`
+  and would speak the new key to a demiurge still holding the old one, so
+  it asks with the copy: `CONF=/srv/src/present-star/conf.jdn.bak-<…>
+  /srv/exe/present-star/dm release reconfigure`. The demiurge's own part --
+  its paths, its doors, its peers' addresses -- a release refuses, naming
+  the keys; only a restart of the demiurge takes it.
+- **Stopping.** `dm stop-peers` stops the peers until `dm run-peers`. The
+  demiurge is the ToT's: one that exits, `dm stop` included, is raised again
+  and asked to run its peers, so it stops for good only on the ToT's side.
+  The bootstrap does not stop it either, so stop it there before
+  bootstrapping again.
 - **The log** is `/srv/data/present-star/demiurge.log`.
 - **Sessions** live in the tree's memory: restarting the tree signs the
   lecturer out. The decks, where the stage stands and the notes are in its

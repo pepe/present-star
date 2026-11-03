@@ -20,10 +20,11 @@
 
 (defn main
   ```
-  Asks the demiurge to do `cmd`: `state`, `run-peers`, `stop-peers`,
-  `restart-peers`, `pull`, `release`, `versions` or `stop`.
+  Asks the demiurge to do `cmd`, with `args`: `state`, `run-peers`,
+  `stop-peers`, `restart-peers`, `pull`, `release` (`release reconfigure`
+  reads the configuration again), `versions`, `operation <id>` or `stop`.
   ```
-  [_ cmd]
+  [_ cmd & args]
   (def {:rpc rpc :psk psk} (conf))
   (def client (rpc/client ;(server/host-port rpc) :client psk))
-  (pp ((keyword cmd) client)))
+  (pp ((keyword cmd) client ;args)))
