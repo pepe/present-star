@@ -820,6 +820,7 @@ The same meaning of pending, confirmed, rejected and cancelled.
 Which modelling question does your diagram answer?
 
 Which important question does it leave to another view?
+===
 title: Docker — Our Database Workbench
 author: Josef Pospíšil
 date: 2026-11-03
@@ -891,6 +892,8 @@ services:
 
 The complete file also supplies credentials and a health check.
 
+`/var/lib/postgresql/data` is a path inside the Linux container, not on your PC.
+
 ---
 # The Neo4j service
 
@@ -924,20 +927,22 @@ The host client uses `localhost:15432`.
 
 PostgreSQL still listens on `5432` inside the container.
 
-Our supplied configuration uses host port `5432` too.
+Our `compose.yaml` maps host `5432` to container `5432`, so the numbers match.
 
 ---
 # Starting the lab 🧪
 
 Open Docker Desktop and wait for the engine.
 
-Open the extracted lab folder in your permitted command host.
+In ISE, `Set-Location` to the extracted lab folder (command-sheet section 1).
 
 ```powershell
 docker version
 docker compose version
 docker compose up -d
 ```
+
+`-d` lets the services run while the command host returns.
 
 Images should already be downloaded for class.
 
@@ -952,7 +957,7 @@ docker compose logs --tail 30 neo4j
 
 Wait for both database services to report healthy.
 
-`-d` lets the services run while the command host returns.
+In ISE, ordinary progress can appear in red. `$LASTEXITCODE` 0 means success.
 
 ---
 # A one-off container 🎬
@@ -1068,7 +1073,7 @@ List student identifiers and names.
 
 Sort by student identifier.
 
-Run a query in Browser, then execute the starter query file through ISE.
+Try it in Browser, then save it in `cypher/my-query.cypher` and run it using command-sheet section 4.
 
 ---
 # Our first Cypher query
@@ -1122,7 +1127,7 @@ Will Daria still exist? Explain your prediction.
 
 Ordinary `down` removes the project’s containers and network.
 
-Named volumes remain.
+Named volumes remain, unless we add `--volumes`.
 
 The next containers attach those volumes and find the stored data.
 
@@ -1145,6 +1150,8 @@ docker compose --profile web down
 docker compose up -d
 docker compose ps
 ```
+
+`--profile web` also removes Adminer, if it was started.
 
 Wait until both databases are healthy again.
 
@@ -1175,21 +1182,21 @@ Putting YAML on H: does not move those volumes to H:.
 ---
 # What does localhost mean? 💬
 
-Your browser runs on the host computer.
+Neo4j Browser runs in your web browser, on the host computer.
 
 Optional Adminer runs in its own container.
 
-Should both use `localhost` to reach PostgreSQL?
+Should both use `localhost` to reach their database?
 
 ---
 # What does localhost mean?
 ## contd.
 
-The host PostgreSQL client uses `localhost:5432`.
+Neo4j Browser connects to `bolt://localhost:7687`, a published host port.
 
-Adminer uses `postgres:5432`, the service name on the Compose network.
+Adminer connects to `postgres:5432`, the service name on the Compose network.
 
-Inside Adminer’s container, localhost would refer to Adminer’s container.
+Inside Adminer’s container, `localhost` would mean Adminer’s own container.
 
 ---
 # Before you leave 🧪
