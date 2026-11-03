@@ -1003,6 +1003,8 @@ Sort by student identifier.
 
 Edit `sql/my-query.sql`, then copy and execute it using command-sheet section 4.
 
+Save it as UTF-8 from an editor: `>` in PowerShell writes UTF-16, which psql refuses.
+
 ---
 # Our first SQL query
 ## contd.
@@ -1074,6 +1076,8 @@ List student identifiers and names.
 Sort by student identifier.
 
 Try it in Browser, then save it in `cypher/my-query.cypher` and run it using command-sheet section 4.
+
+Save as UTF-8 without BOM: cypher-shell refuses a file that starts with one.
 
 ---
 # Our first Cypher query
@@ -1197,6 +1201,8 @@ Neo4j Browser connects to `bolt://localhost:7687`, a published host port.
 Adminer connects to `postgres:5432`, the service name on the Compose network.
 
 Inside Adminer’s container, `localhost` would mean Adminer’s own container.
+
+Adminer opens schema `public`, with no tables: ours are in schema `lab`.
 
 ---
 # Before you leave 🧪
