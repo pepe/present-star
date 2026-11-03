@@ -176,6 +176,49 @@ What it did is in syslog: `doas grep ' thickets:' /var/log/messages`. A new
 thicket on the box is one more line in its list. busybox `crond` on the box
 knows no `@reboot`, which is why this is not a crontab.
 
+## Supervised
+
+Since 2 November 2026 the thicket on the box is supervised: its config's
+`:deploy` has `:supervised true` and `:environment "/srv/env/pan-earth-v6"`,
+so the bootstrap builds no `prod` environment and starts no demiurge.
+
+- **Who raises it.** The box's ToTs. The OpenRC service `tots`
+  (`supervise-daemon`, checkout `/srv/src/tot`) raises the ToT
+  `tot.pospisil.work`, and that one raises present-star's demiurge as its
+  subthicket: from `/srv/src/present-star`, with `CONF` set to its
+  `conf.jdn`, into `/srv/data/present-star/demiurge.log`. It asks it to
+  `run-peers` each time it is ready, and raises it again when it exits, so
+  `dm stop` stops nothing for long and nobody starts it by hand.
+  `/etc/local.d/thickets.start` is gone from the box: `tots` raises
+  everything at boot.
+- **The environment**, `/srv/env/pan-earth-v6`, is shared with the box's
+  other thickets and prepared once by the ToT (`/srv/src/tot/environment.janet`):
+  `ready.jdn` there says it is, `manifest.jdn` which Janet, spork, jhydro,
+  gp and twm it holds. Nothing is installed into it, so the *gp or twm*
+  step below is for a thicket with a `prod` of its own: here a new gp or
+  twm is a new environment, under a new name, named in both configs.
+- **`dm`** is `bin/dm.janet` quickbinned by the bootstrap, and nothing else
+  builds it, neither a release nor the ToT. Its door and psk are compiled
+  in, so once either changes the demiurge drops its handshake, and `dm`
+  dies with `bad slot #2 … got nil in jhydro/kx/xx3`: the reply that never
+  came, not a missing key. Build it again in the environment, as the
+  bootstrap does; no peer notices:
+  ```
+  ssh deploy@pe "umask 077; cd /srv/src/present-star && . /srv/env/pan-earth-v6/bin/activate &&
+                 janet-pm quickbin bin/dm.janet dm.new && mv dm.new /srv/exe/present-star/dm"
+  ```
+  Meanwhile the ToT's own client asks the same through the ToT:
+  ```
+  ssh deploy@pe "cd /srv/src/tot && . /srv/env/pan-earth-v6/bin/activate &&
+                 CONF=conf.jdn janet tdm.janet tot.pospisil.work/present-star state"
+  ```
+- **A deck** needs no `dm`: a pull in the checkout is what `dm pull` does,
+  and the decker reads its decks every second and logs
+  `decker built <deck>.md`.
+  ```
+  ssh deploy@pe "cd /srv/src/present-star && git pull --ff-only"
+  ```
+
 ## Day to day
 
 - **A deck.** Commit it, push, and `dm pull`. The decker builds it within a
