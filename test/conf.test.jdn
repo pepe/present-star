@@ -82,7 +82,7 @@
     :public "public"
     # An Avatar of a Locker may show the presenter in its door.
     :origins ["http://pepe.locker.localhost:8790"]
-    :door/css ["slides.css"]
+    :door/css ["door.css" "slides.css"]
     :neighbors [:watcher]}
    :watcher
    {:http "localhost:8881"

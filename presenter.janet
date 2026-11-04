@@ -453,7 +453,7 @@
   tab, the element reading the keys.
   ```
   [address path content &opt keys?]
-  [:div {:id "door" :class "present-star" :data-init (<door/controls/> address)}
+  [:div {:id "door" :class "container present-star" :data-init (<door/controls/> address)}
    (door/<stylesheet/> address)
    [:div {:data-init (ds/get path)} content]
    (if keys? [:div {:data-on:keydown__window "psKey($_bearer, evt)"}])])

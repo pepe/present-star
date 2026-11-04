@@ -18,6 +18,7 @@
    [:title title " · Present Star"]
    [:meta {:charset "utf-8"}]
    [:meta {:name "viewport" :content "width=device-width, initial-scale=1"}]
+   [:link {:rel "stylesheet" :href "/present-star.css"}]
    [:link {:rel "stylesheet" :href "/slides.css"}]])
 
 (defn <page/header/>

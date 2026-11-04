@@ -213,6 +213,7 @@
 (let [resp (request "GET" (url "/content?door=enter") :headers through)]
   (def body (string (resp :body)))
   (assert (string/find "selector #door" body) "An Avatar's door is given the stage tab")
+  (assert (string/find `class="container present-star"` body) "in a column of the Avatar's page")
   (assert (string/find `href="http://localhost:8880/_door.css"` body)
           "with the presenter's styles, scoped to the door")
   (assert (string/find "window.psGo" body) "its controls, carrying the bearer")
@@ -233,7 +234,11 @@
   (assert (sse/until live m [`class="on-stage lectern"`])
           "and the presenter's own page follows it, as the students would"))
 (let [css (request "GET" (url "/_door.css"))]
-  (assert (string/has-prefix? "@scope (#door)" (string (css :body))) "The door's styles are the presenter's, scoped"))
+  (assert (string/has-prefix? "@scope (#door)" (string (css :body))) "The door's styles are the presenter's, scoped")
+  (assert (string/find "var(--muted-fg)" (string (css :body)))
+          "in the look of the Avatar's page, named after missing.css's colours")
+  (assert-not (string/find "#f4f3ef" (string (css :body)))
+              "never present-star's own palette"))
 (let [closed (request "GET" (url "/content?door=enter")
                       :headers {"Origin" origin "Authorization" "Bearer gone"})]
   (assert (string/find "The door closed" (string (closed :body)))

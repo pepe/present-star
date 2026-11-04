@@ -27,6 +27,7 @@
   (assert ((success-has? `class="watching"` `/content` `Waiting for the lecture`) resp)
           "and is told to wait while nothing is on"))
 (assert (success? (request "GET" (url "/slides.css"))) "The stylesheet is served")
+(assert (success? (request "GET" (url "/present-star.css"))) "and so is the look it wears")
 
 (def live (sse/open http "/content"))
 (assert (sse/until live 0 [`id="live"` `Waiting for the lecture`])

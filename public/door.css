@@ -1,0 +1,36 @@
+/* The presenter in an Avatar's door, wearing metabolon's look: missing.css,
+   which the Avatar's page has already, at metabolon's rhythm, in place of
+   present-star's own palette and page (present-star.css). What slides.css
+   reads its colours from is named here after missing.css's own, so buttons,
+   links, lines and panels are the ones metabolon's places have. The door
+   keeps the presenter as wide as its own page.
+
+   Served scoped to the door, see twm's `:door/css`: `:root` is the door. */
+
+:root {
+  line-height: 1.4rem;
+  --line-length: 100vw;
+  --muted: var(--muted-fg);
+  --line: var(--graphical-fg);
+  --panel: var(--box-bg);
+  --accent-fg: var(--bg);
+  --slide-bg: var(--box-bg);
+  --slide-fg: var(--fg);
+  --code-bg: #1f2024;
+  --code-fg: #f1f0ea;
+  --error: var(--bad-fg);
+  --error-bg: var(--bad-bg);
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.08), 0 4px 16px rgb(0 0 0 / 0.08);
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.error {
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--border-radius);
+  background: var(--error-bg);
+  color: var(--error);
+}
