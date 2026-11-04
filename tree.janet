@@ -291,14 +291,24 @@
 
 (defn- session/of
   ```
-  The session of the door `owner` guards, or nil.
+  The live sessions of the door `owner` guards, never nil.
 
-  Each guardian's entrance grants a session of its own, so the tree keeps
-  one per guardian, and whoever asks names the guardian -- an RPC call does
-  not say who is calling.
+  Each guardian's door grants sessions of its own, so the tree keeps them
+  per guardian, and whoever asks names the guardian -- an RPC call does
+  not say who is calling. A door keeps several at once: a sign-in, and an
+  Avatar let in through the door, each hold one. A tree kept from before
+  that holds one session as a string; it is read as the one live token it
+  was, so taking this release signs nobody out.
   ```
   [view owner]
-  (get-in view [:sessions owner]))
+  (def held (get-in view [:sessions owner]))
+  (def live
+    (cond
+      (dictionary? held) held
+      (present-string? held) @{held true}
+      @{}))
+  (unless (= live held) (put-in view [:sessions owner] live))
+  live)
 
 (defr +:register
   ```
@@ -317,19 +327,26 @@
 
 (defr +:session/new
   ```
-  RPC function that stores a new session for the door `owner` guards. An
-  empty session ends the owner's.
+  RPC function that records a session of the door `owner` guards.
+
+  A door keeps several at once: a sign-in, or an Avatar let in through the
+  door, adds one and ends nobody's. What an ending ends -- one session, a
+  holder's, or all of the door's -- is `twm/tree`'s `sessions/record`'s to
+  say.
   ```
   []
-  (def [session owner] args)
+  (def [session owner how] args)
   (assert (keyword? owner) "A session needs the guardian whose door it opens")
   (produce/applied
     (twm-tree/session/new
       session
       (twm-tree/^session/save
         session
-        (fn [state value]
-          ((=> :view :sessions (>put owner value)) state))
+        (fn [state _]
+          (session/of (state :view) owner)
+          (twm-tree/sessions/record (get-in state [:view :sessions])
+                                    session owner how)
+          state)
         (^push :cap/session))
       owner)))
 

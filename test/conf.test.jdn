@@ -80,6 +80,9 @@
     :address "http://localhost:8880"
     :static true
     :public "public"
+    # An Avatar of a Locker may show the presenter in its door.
+    :origins ["http://pepe.locker.localhost:8790"]
+    :door/css ["slides.css"]
     :neighbors [:watcher]}
    :watcher
    {:http "localhost:8881"
