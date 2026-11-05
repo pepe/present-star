@@ -24,10 +24,15 @@
   (assert (success? resp) "The door answers where the presenter would")
   (assert ((success-has? `Presenter` `id="stage"` `http://localhost:8880/content`) resp)
           "with the presenter's shell and an empty stage"))
-(assert (sse/until (sse/open door "/content") 0 [`Present Star` `Sign in to present` `id="gate"`])
-        "Its stage asks for the password")
-(assert (secret "nope" `That was not the password` `id="gate"`)
-        "A wrong password is refused, and the form stays")
+# The test conf names a Locker among the entrance's origins, so the stage
+# asks no password: it sends the lecturer to the Locker.
+(let [said (sse/until (sse/open door "/content") 0
+                      [`Present Star` `Enter it from your Locker`
+                       `window.location.replace` `http://pepe.locker.localhost:8790`])]
+  (assert said "Its stage sends the lecturer to their Locker")
+  (assert (not (string/find `id="gate"` (or said ""))) "and offers no password form"))
+(assert (secret "nope" `That was not the password` `Go to your Locker`)
+        "A wrong password is refused, and the way to the Locker stays")
 (defn cookie [session] @{:headers @{"Cookie" @{"session" session}}})
 (let [said (secret "testist" `Set-Cookie: session=` `Moving` `the Presenter`)
       [session] (peg/match ~(* (thru "Set-Cookie: session=") (<- (to ";"))) (or said ""))
