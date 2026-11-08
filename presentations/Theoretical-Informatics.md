@@ -4475,3 +4475,652 @@ The timeout and tabling discussion use SWI-Prolog facilities.
 When does a logical description become an effective procedure?
 
 Which part of today's answer depended on the relation, and which on the search?
+===
+title: Finishing Prolog · Git and GitHub
+author: Josef Pospíšil
+date: 2026-11-10
+---
+# Finishing Prolog · Git and GitHub
+
+EIEC4E / INFOAN1 · Theoretical Informatics
+
+Lecture 6 · 10 November 2026
+
+---
+# Three things to leave with
+
+Explain why a Prolog search can miss a proof.
+
+Decide which changes belong in a Git commit.
+
+Push that commit and find it on GitHub.
+
+---
+# Today’s route
+
+Close Prolog with one graph and two search orders.
+
+Then make two edits to a notes file and follow them from your editor to GitHub.
+
+---
+# Part 1: Closing Prolog
+
+Why was Prolog worth studying?
+
+It made the difference between a description and an execution visible.
+
+---
+# Why Prolog? 💬
+
+If the rules already say what is true, what work is left for the interpreter?
+
+---
+# Why Prolog?
+## contd.
+
+The interpreter still has to find a proof.
+
+It selects goals, tries clauses and returns to alternatives when a branch fails.
+
+An answer can exist even when that search never reaches it.
+
+---
+# Our graph
+
+```prolog
+edge(a, b).
+edge(b, c).
+edge(a, d).
+edge(d, e).
+```
+
+Keep this fact order when predicting the execution.
+
+---
+# Our recursive rule
+
+```prolog
+reachable(X, Y) :- edge(X, Y).
+
+reachable(X, Y) :-
+    edge(X, Z),
+    reachable(Z, Y).
+```
+
+The first clause uses one edge. The second uses an edge and a further walk.
+
+---
+# What does reachable mean?
+
+`reachable(X,Y)` means there is a directed walk of **at least one edge** from `X` to `Y`.
+
+That is the transitive closure, R⁺.
+
+R* also includes walks of length zero.
+
+---
+# Which answers appear? 🧪
+
+```prolog
+?- reachable(a, X).
+```
+
+Predict all the bindings, in the order Prolog will report them.
+
+Why do the first two appear before the others?
+
+---
+# Which answers appear?
+## contd.
+
+`X = b`, then `d`, then `c`, then `e`.
+
+The direct-edge clause gives `b` and `d` first.
+
+The recursive clause then explores the longer walks through each.
+
+---
+# What if we start at e? 🧪
+
+On the original graph:
+
+```prolog
+?- reachable(e, X).
+?- reachable(a, a).
+```
+
+Does either query succeed?
+
+---
+# What if we start at e?
+## contd.
+
+Both finitely fail.
+
+There is no edge leaving `e`, and no walk of positive length from `a` back to `a`.
+
+An empty walk would answer the second query only under R*.
+
+---
+# One new fact
+
+Add this fact after the original four edge facts:
+
+```prolog
+edge(c, a).
+```
+
+The program now has a cycle through a, b and c.
+
+---
+# Is e still reachable from a? 🧪
+
+```prolog
+?- reachable(a, e).
+```
+
+First answer as a reader of the graph.
+
+Then predict what the interpreter does.
+
+---
+# Is e still reachable from a?
+## contd.
+
+**The graph:** a → d → e is still a valid walk.
+
+**The interpreter:** the first recursive branch follows a → b → c → a → … and keeps going.
+
+The branch through d is never reached.
+
+---
+# Why the base clause does not rescue us
+
+Each call first checks for a direct edge to e.
+
+That check fails at a, b and c.
+
+The recursive clause then selects the first available edge, returning to the same call pattern.
+
+---
+# Could we change the search? 💬
+
+Keep exactly the same edge facts, but move `edge(a,d).` before `edge(a,b).`
+
+What changes: the relation, the first answer, or both?
+
+---
+# Could we change the search?
+## contd.
+
+The relation is unchanged: the same walks exist.
+
+The search tries a → d first and finds a proof using d → e.
+
+That guarantees a first success for this query in this order. Asking for more proofs goes around the cycle and finds the same answer again, without end.
+
+---
+# A timeout is an observation
+
+Optional SWI-Prolog demo on the original cyclic fact order:
+
+```prolog
+?- call_with_time_limit(1, reachable(a, e)).
+```
+
+If the limit is exceeded, SWI-Prolog raises `time_limit_exceeded`.
+
+That tells us the search exceeded its time budget.
+
+---
+# Three outcomes to distinguish
+
+**Success:** a proof was found.
+
+**Finite failure:** the search finished without a proof.
+
+**Nontermination:** the search continues without reaching a conclusion for the answer being sought.
+
+---
+# Exit from Prolog 🧪
+
+Explain the cyclic example in two sentences.
+
+1. What does the graph tell us?
+2. What does the search order tell us?
+
+---
+# Exit from Prolog
+## contd.
+
+A walk from a to e exists through d.
+
+The interpreter tries the branch through b first. That branch keeps returning to a, so the interpreter does not try the branch through d.
+
+---
+# Closing Prolog
+
+A set of rules describes a relation.
+
+An interpreter chooses how to search for answers.
+
+To explain what happens, name both the rules and the search order.
+
+---
+# Part 2: Git and GitHub
+
+Suppose you change a file twice and want to share only the first change.
+
+How can you choose exactly what the next version contains?
+
+---
+# Git and GitHub
+
+**Git** records versions and lets us compare them.
+
+**GitHub** hosts repositories and gives people a place to share and review them.
+
+We will use Git on our machines and GitHub to share the results.
+
+---
+# What is a repository?
+
+A Git repository stores project history and references to versions.
+
+A local clone usually gives you both the history and an editable working directory.
+
+The repository on GitHub is another copy you can exchange changes with.
+
+---
+# Clone, fork and download
+
+| Action | What you get |
+|---|---|
+| Clone | A local Git repository and working files |
+| Fork | A new repository on GitHub related to another one |
+| Download ZIP | A copy of files, without Git history |
+
+Use the course repository link once it is provided.
+
+---
+# Our demo task 🧪
+
+Add two observations to `NOTES.md`:
+
+1. Git commits the staged content.
+2. Pushing shares commits with a remote.
+
+We will record the observations in separate commits.
+
+---
+# Before the demo
+
+The example assumes a demo repository you can write to.
+
+Its checked-out branch is named `main`. Its GitHub remote is named `origin`.
+
+Sign in with an approved GitHub method before class. Use your own remote or the one assigned to you.
+
+---
+# Get a local copy
+
+```sh
+git clone <repository-url> ti-demo
+cd ti-demo
+git status
+```
+
+Replace `<repository-url>` with the actual URL before running the command.
+
+`git status` tells us where we are and whether there are changes.
+
+---
+# Where is this copy connected?
+
+```sh
+git remote -v
+git branch --show-current
+```
+
+Check the actual remote URL and branch before pushing.
+
+For this demo we expect `origin` and `main`.
+
+---
+# Three places to look
+
+**Working tree:** files as they are now in your editor.
+
+**Staging area:** the content selected for the next commit.
+
+**Local history:** commits already recorded by Git.
+
+GitHub is reached by a separate network operation.
+
+---
+# Make the first edit 🧪
+
+Open the existing `NOTES.md` and add this line:
+
+```text
+Git commits the staged content.
+```
+
+Save the file. Before running any other command, predict what has changed.
+
+---
+# Make the first edit
+## contd.
+
+The working file changed.
+
+The staging area and local commit history still have their previous contents.
+
+The GitHub copy is untouched by this edit.
+
+---
+# Inspect the edit
+
+```sh
+git status --short
+git diff -- NOTES.md
+```
+
+For a tracked file changed only in the working tree, short status shows:
+
+```text
+ M NOTES.md
+```
+
+The second column marks the working tree.
+
+---
+# Stage the first edit
+
+```sh
+git add NOTES.md
+git diff --cached -- NOTES.md
+```
+
+`git add` copies the current content into the staging area.
+
+Read the staged diff before committing.
+
+---
+# Edit again after staging 🧪
+
+Now add this second line and save the file:
+
+```text
+Pushing shares commits with a remote.
+```
+
+Do not stage it yet.
+
+Which line would `git commit` record now?
+
+---
+# Edit again after staging
+## contd.
+
+Only the first line is staged.
+
+The second line exists in the working tree but was added after `git add`.
+
+```text
+MM NOTES.md
+```
+
+The file has both staged and unstaged changes.
+
+---
+# Two diffs, two questions
+
+```sh
+git diff --cached -- NOTES.md
+git diff -- NOTES.md
+```
+
+The first shows what is staged relative to the last commit.
+
+The second shows what the working file adds beyond what is staged.
+
+---
+# Record the first checkpoint
+
+```sh
+git commit -m "Explain what Git commits"
+git log -1 --oneline
+git status --short
+```
+
+The latest commit records the first note.
+
+The note about pushing is still an unstaged edit.
+
+---
+# What would GitHub show now? 💬
+
+You have a new local commit.
+
+You refresh the repository page on GitHub before pushing.
+
+Will the first note appear there?
+
+---
+# What would GitHub show now?
+## contd.
+
+GitHub still shows the remote branch’s previous version.
+
+The new commit is in your local repository.
+
+Push it when you want the remote branch to include it.
+
+---
+# Publish the first commit
+
+```sh
+git push origin main
+```
+
+Check the same branch on GitHub and inspect the commit.
+
+The first note is now in that remote branch if the push succeeded.
+
+The unstaged note about pushing stays local.
+
+---
+# Publish the second commit 🧪
+
+Stage just `NOTES.md` again.
+
+Inspect what will go into the second commit.
+
+Record it, push it and find it on GitHub.
+
+---
+# Publish the second commit
+## contd.
+
+```sh
+git add NOTES.md
+git diff --cached -- NOTES.md
+git commit -m "Explain what pushing shares"
+git push origin main
+```
+
+The remote branch now has both commits, with one change in each.
+
+---
+# Why two commits?
+
+Each commit has one clear purpose and a message that names it.
+
+A reviewer can inspect each observation separately.
+
+Use the same pattern for code and the tests that explain its behaviour.
+
+---
+# A new file is different
+
+A newly created file can appear as `??` in short status.
+
+Plain `git diff` does not show its contents while it is untracked.
+
+Review the file, stage it by name, then inspect the staged diff.
+
+---
+# When your push is refused
+
+Check the remote URL, branch and your write access.
+
+If the remote branch has changes you do not have, stop and inspect what changed before trying again.
+
+For this exercise, use one writer per demo branch.
+
+---
+# What can a reviewer reproduce? 💬
+
+You ran a test successfully, but its file is still untracked.
+
+You pushed your latest commit and gave someone the link.
+
+Will their fresh clone have the test?
+
+---
+# What can a reviewer reproduce?
+## contd.
+
+No. The fresh clone gets the history available from the remote.
+
+Review `git status`, commit the test file and push the commit.
+
+Give your reviewer the commit ID so they know which version you tested.
+
+---
+# Your Git loop
+
+```text
+edit → inspect → stage → review → commit → push
+```
+
+Use `git status` whenever you are unsure where the change is.
+
+In the seminar, repeat the loop once on your assigned repository.
+
+---
+# Find the two commits on GitHub
+
+Open the same repository and choose the branch you pushed.
+
+Open its commit history and select each of your two commits.
+
+Look for the message, commit ID and changed lines.
+
+---
+# Inspect the last commit locally
+
+```sh
+git log -2 --oneline
+git show HEAD -- NOTES.md
+```
+
+The log lists the two commit messages.
+
+`git show` displays the change to `NOTES.md` in the current commit.
+
+---
+# Which command answers which question? 🧪
+
+What changed in the working file since staging?
+
+What is staged for the next commit?
+
+What did I already record in the latest commit?
+
+---
+# Which command answers which question?
+## contd.
+
+```sh
+git diff -- NOTES.md
+git diff --cached -- NOTES.md
+git show HEAD -- NOTES.md
+```
+
+These are three different comparisons. An empty diff can be a correct answer.
+
+---
+# Optional: another copy receives the work
+
+Use a second clone of the demo repository.
+
+Check that it contains the two notes you pushed.
+
+In the second clone, add this line, commit it and push it:
+
+```text
+A commit ID identifies a specific commit.
+```
+
+---
+# Does the first clone update itself? 💬
+
+The third note is visible on GitHub.
+
+You return to the first clone and open `NOTES.md`.
+
+Will that file already contain the third note?
+
+---
+# Does the first clone update itself?
+## contd.
+
+No. The first clone has not received the new commit.
+
+With a clean working tree on `main`, update it:
+
+```sh
+git pull --ff-only origin main
+git log -1 --oneline
+```
+
+This works when the local branch can simply move forward to the remote commit.
+
+---
+# Seminar checkpoint 🧪
+
+On the assigned practice repository, make one small edit.
+
+Use `git status` and the staged diff before committing.
+
+Push the commit, open it on GitHub and show your partner the exact lines it contains.
+
+---
+# Before you leave 💬
+
+You committed a change, but it is still absent on GitHub.
+
+Where is the commit, and what should you check before sharing it?
+
+---
+# Before you leave
+## contd.
+
+The commit is in your local repository.
+
+Check the remote and the branch, then push to the intended remote branch.
+
+On GitHub, open that branch and verify the commit.
+
+---
+# References
+
+[Simply Logical: Logic Programming and Prolog](https://book.simply-logical.space/src/text/1_part_i/3.0.html)
+
+[SWI-Prolog: Time-limited calls](https://www.swi-prolog.org/pldoc/man?predicate=call_with_time_limit/2)
+
+[Pro Git: Recording changes](https://git-scm.com/book/en/v2/Git-Basics-Recording-Changes-to-the-Repository)
+
+[GitHub: About remote repositories](https://docs.github.com/en/get-started/git-basics/about-remote-repositories)
