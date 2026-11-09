@@ -840,8 +840,6 @@ Start two database services from one configuration.
 
 Ask the same enrollment question in SQL and Cypher.
 
-Test whether the data survives container recreation.
-
 ---
 # Image, container and volume
 
@@ -850,23 +848,6 @@ An **image** is a packaged template used to create containers.
 A **container** is an isolated runtime instance.
 
 A **volume** holds data beyond one container’s lifetime.
-
----
-# Where should the database live? 💬
-
-We remove a database container after adding a student.
-
-Where must its data be stored if the next container should find that student?
-
----
-# Where should the database live?
-## contd.
-
-In persistent storage attached to the new container.
-
-Today we use Docker-managed named volumes.
-
-The volume survives ordinary container removal.
 
 ---
 # Compose describes our environment
@@ -1119,73 +1100,6 @@ ORDER BY name, offering_id;
 The same two rows for Ada.
 
 ---
-# What happens after down? 💬
-
-We add student Daria to each database.
-
-Then we run `docker compose down` and `docker compose up -d`.
-
-Will Daria still exist? Explain your prediction.
-
----
-# What happens after down?
-## contd.
-
-Ordinary `down` removes the project’s containers and network.
-
-Named volumes remain, unless we add `--volumes`.
-
-The next containers attach those volumes and find the stored data.
-
-Let’s test that prediction.
-
----
-# Adding our persistence marker 🧪
-
-Run both `persistence-add` files using command-sheet section 6.
-
-Each adds `s04 Daria` without duplicating the record if repeated.
-
-Check the output before removing the containers.
-
----
-# Recreating the containers 🧪
-
-```powershell
-docker compose --profile web down
-docker compose up -d
-docker compose ps
-```
-
-`--profile web` also removes Adminer, if it was started.
-
-Wait until both databases are healthy again.
-
-Keep the named volumes. Do not rerun the seeds.
-
----
-# Checking the stored data 🧪
-
-Copy and run both `persistence-check` files.
-
-Both should return `s04 Daria`.
-
-The old `/tmp` query copies disappeared with the old containers.
-
-The database records stayed in their named volumes.
-
----
-# What does copying the YAML reproduce?
-
-The configuration describes how to start the environment.
-
-Our seed files reproduce the sample data.
-
-Existing database volumes stay with this Docker installation.
-
-Putting YAML on H: does not move those volumes to H:.
-
----
 # What does localhost mean? 💬
 
 Neo4j Browser runs in your web browser, on the host computer.
@@ -1211,7 +1125,7 @@ Adminer opens schema `public`, with no tables: ours are in schema `lab`.
 
 Save your SQL and Cypher query files.
 
-Show that Daria survived in both databases, or describe the precise obstacle.
+Show the confirmed-enrollment result in both databases, or describe the precise obstacle.
 
 Explain image, container and volume in one sentence.
 
@@ -1328,7 +1242,7 @@ The root configuration is our classroom path.
 
 Standalone Compose files are supplied under `postgres/` and `neo4j/`.
 
-They use separate project volumes and the same host ports.
+They use the same host ports and start without today’s data.
 
 Stop one project before starting an overlapping alternative.
 
