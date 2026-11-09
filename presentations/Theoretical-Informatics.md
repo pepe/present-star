@@ -5077,16 +5077,14 @@ Will that file already contain the third note?
 # Does the first clone update itself?
 ## contd.
 
-No. The first clone has not received the new commit.
-
-With a clean working tree on `main`, update it:
+No. On a clean `main`, pull the new commit:
 
 ```sh
 git pull --ff-only origin main
 git log -1 --oneline
 ```
 
-This works when the local branch can simply move forward to the remote commit.
+`--ff-only` stops if this clone has commits of its own.
 
 ---
 # Seminar checkpoint 🧪
