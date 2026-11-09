@@ -4740,7 +4740,7 @@ The repository on GitHub is another copy you can exchange changes with.
 | Fork | A new repository on GitHub related to another one |
 | Download ZIP | A copy of files, without Git history |
 
-Use the course repository link once it is provided.
+Today’s demo repository: [pepe/culs-ti-git-demo](https://github.com/pepe/culs-ti-git-demo)
 
 ---
 # Our demo task 🧪
@@ -4759,18 +4759,18 @@ The example assumes a demo repository you can write to.
 
 Its checked-out branch is named `main`. Its GitHub remote is named `origin`.
 
-Sign in with an approved GitHub method before class. Use your own remote or the one assigned to you.
+Sign in with an approved GitHub method before class. Fork the demo repository and clone your fork.
 
 ---
 # Get a local copy
 
 ```sh
-git clone <repository-url> ti-demo
+git clone https://github.com/<your-account>/culs-ti-git-demo.git ti-demo
 cd ti-demo
 git status
 ```
 
-Replace `<repository-url>` with the actual URL before running the command.
+Replace `<your-account>` with the account that holds your fork.
 
 `git status` tells us where we are and whether there are changes.
 
@@ -5007,7 +5007,7 @@ edit → inspect → stage → review → commit → push
 
 Use `git status` whenever you are unsure where the change is.
 
-In the seminar, repeat the loop once on your assigned repository.
+In the seminar, repeat the loop once on your fork of the practice repository.
 
 ---
 # Find the two commits on GitHub
@@ -5089,7 +5089,7 @@ git log -1 --oneline
 ---
 # Seminar checkpoint 🧪
 
-On the assigned practice repository, make one small edit.
+Fork [pepe/culs-ti-git-practice](https://github.com/pepe/culs-ti-git-practice), clone your fork and edit `CHECKPOINT.md`.
 
 Use `git status` and the staged diff before committing.
 
