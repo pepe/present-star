@@ -240,7 +240,7 @@
   (assert (string/find "--color-base-100" (string (css :body)))
           "then daisyUI and its themes, as on the presenter's own page")
   (assert-not (string/find "var(--muted-fg)" (string (css :body)))
-              "never the Avatar's missing.css colours"))
+              "never an Avatar's own colours"))
 (let [closed (request "GET" (url "/content?door=enter")
                       :headers {"Origin" origin "Authorization" "Bearer gone"})]
   (assert (string/find "The door closed" (string (closed :body)))
