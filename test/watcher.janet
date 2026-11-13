@@ -28,6 +28,9 @@
           "and is told to wait while nothing is on"))
 (assert (success? (request "GET" (url "/slides.css"))) "The stylesheet is served")
 (assert (success? (request "GET" (url "/present-star.css"))) "and so is the look it wears")
+(assert (success? (request "GET" (url "/daisyui/daisyui-5.7.50.css")))
+        "over daisyUI's parts")
+(assert (success? (request "GET" (url "/daisyui/themes-5.7.50.css"))) "and themes")
 
 (def live (sse/open http "/content"))
 (assert (sse/until live 0 [`id="live"` `Waiting for the lecture`])

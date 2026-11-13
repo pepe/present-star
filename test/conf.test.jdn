@@ -82,7 +82,10 @@
     :public "public"
     # An Avatar of a Locker may show the presenter in its door.
     :origins ["http://pepe.locker.localhost:8790"]
-    :door/css ["door.css" "slides.css"]
+    # The stylesheets an Avatar's door is styled with, scoped to the door:
+    # a reset first, then the same sheets the presenter's own page links.
+    :door/css ["door.css" "daisyui/daisyui-5.7.50.css" "daisyui/themes-5.7.50.css"
+               "present-star.css" "slides.css"]
     :neighbors [:watcher]}
    :watcher
    {:http "localhost:8881"

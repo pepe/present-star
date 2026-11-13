@@ -8,9 +8,9 @@
 (defn main
   ```
   Runs the thicket for development, raising every peer and restarting the
-  lot whenever a Janet source changes. Decks and the stylesheet are not
-  sources: the decker rebuilds decks as they are saved, and the stylesheet
-  is served fresh.
+  lot whenever a Janet source changes. Decks and the stylesheets are not
+  sources: the decker rebuilds decks as they are saved, and the stylesheets
+  are served fresh.
 
   `test` runs the suite once, `test/watch` again on every change.
   ```

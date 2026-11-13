@@ -10,7 +10,11 @@
   :secret "\x01\xB5\x06\x14@\xFF\x11\xD5\xFE.g\xD2\x89\x94C\xFAAt>B\xD1\xE4,\x8F\xE6. \xF9\xA7\xEE\x17\xDA^\xF3s\xFA\xAA\xF0\x9DD\"\xEF\xB3\xBF\xCAx\xA5\xECz\x81\x10\xEB\am\x82R\xE4u\x83}x\x1C\xB3g\x9A\v\xEA\x0FX\xAE\xE1\xF7;\x1E[\xE34\x04a\xF7\t\x9E\xFD\x90.\xBA\xAD 9\xE6\x96n!\xC7\x93\x82\xAD\x16\x80\x17Y\xADj\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
   :spaces @{:presenter @{:address "http://localhost:8880"
                          :cookie-host "localhost"
-                         :door/css ["door.css" "slides.css"]
+                         :door/css ["door.css"
+                                    "daisyui/daisyui-5.7.50.css"
+                                    "daisyui/themes-5.7.50.css"
+                                    "present-star.css"
+                                    "slides.css"]
                          :entrance true
                          :guards :presenter
                          :http "localhost:8880"

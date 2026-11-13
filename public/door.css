@@ -1,36 +1,20 @@
-/* The presenter in an Avatar's door, wearing metabolon's look: missing.css,
-   which the Avatar's page has already, at metabolon's rhythm, in place of
-   present-star's own palette and page (present-star.css). What slides.css
-   reads its colours from is named here after missing.css's own, so buttons,
-   links, lines and panels are the ones metabolon's places have. The door
-   keeps the presenter as wide as its own page.
+/*
+  Only through an Avatar's door, and first of the door's stylesheets.
 
-   Served scoped to the door, see twm's `:door/css`: `:root` is the door. */
+  An Avatar's page has a stylesheet of its own -- Locker's is missing.css
+  -- and it reaches into the door as much as around it. Here everything in
+  the door is put back to the browser's own defaults first, in a layer of
+  its own, so what styles the door is daisyUI and Present Star's own
+  sheets, the same as on the presenter's own page. The Avatar's sheet has
+  to be in a layer declared before this one for that to hold: a rule in no
+  layer at all wins over every layered one.
 
-:root {
-  line-height: 1.4rem;
-  --line-length: 100vw;
-  --muted: var(--muted-fg);
-  --line: var(--graphical-fg);
-  --panel: var(--box-bg);
-  --accent-fg: var(--bg);
-  --slide-bg: var(--box-bg);
-  --slide-fg: var(--fg);
-  --code-bg: #1f2024;
-  --code-fg: #f1f0ea;
-  --error: var(--bad-fg);
-  --error-bg: var(--bad-bg);
-  --shadow: 0 1px 2px rgb(0 0 0 / 0.08), 0 4px 16px rgb(0 0 0 / 0.08);
-}
-
-.muted {
-  color: var(--muted);
-}
-
-.error {
-  margin: 0;
-  padding: 0.5rem 0.75rem;
-  border-radius: var(--border-radius);
-  background: var(--error-bg);
-  color: var(--error);
+  twm scopes the door's sheets to the door and reads `:root` as the door
+  itself, so `:root *` is everything inside it and nothing around it.
+*/
+@layer door-reset {
+  :root *, :root *::before, :root *::after { all: revert; }
+  /* Apart, so a browser that knows none of these keeps the rule above. */
+  :root *::placeholder, :root *::marker, :root *::backdrop,
+  :root *::file-selector-button { all: revert; }
 }

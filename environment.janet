@@ -11,6 +11,20 @@
   "https://cdn.jsdelivr.net/gh/starfederation/datastar@1.0.0-RC.7/bundles/datastar.js")
 
 # HTTP
+(def stylesheets
+  ```
+  The stylesheets a page links, in this order: daisyUI's parts, its two
+  themes, Present Star's own page, and the slides with the presenter and
+  the watcher laid out around them.
+
+  All are served from `public/`, from the root. The order is the order of
+  their cascade layers -- base, then daisyUI's utilities, then
+  `present-star` -- which is what lets the last two have the final word
+  without one `!important`.
+  ```
+  ["/daisyui/daisyui-5.7.50.css" "/daisyui/themes-5.7.50.css"
+   "/present-star.css" "/slides.css"])
+
 (defn <page/head/>
   "HTML page head"
   [title]
@@ -18,19 +32,24 @@
    [:title title " · Present Star"]
    [:meta {:charset "utf-8"}]
    [:meta {:name "viewport" :content "width=device-width, initial-scale=1"}]
-   [:link {:rel "stylesheet" :href "/present-star.css"}]
-   [:link {:rel "stylesheet" :href "/slides.css"}]])
+   ;(seq [href :in stylesheets] [:link {:rel "stylesheet" :href href}])])
 
 (defn <page/header/>
-  "HTML page header, with the logout control when `lgt` is set"
+  ```
+  HTML page header, with the logout control when `lgt` is set.
+
+  A topbar rather than daisyUI's navbar: the header is Present Star's own
+  layout, and a class of daisyUI's name would bring its rules along.
+  ```
   [title &opt lgt]
-  [:header
+  [:header {:class "topbar"}
    [:span {:class "brand"} "Present Star"]
    [:span {:class "title"} title]
    # Asked over Datastar, never navigated to: `/logout` answers with a
    # stream of the transition, and a document sent there as a document
    # renders the events as text and then has nowhere to go.
-   (if lgt [:button {:data-on:click (ds/get "/logout")} "Log out"])])
+   (if lgt [:button {:class "btn btn-ghost btn-sm"
+                     :data-on:click (ds/get "/logout")} "Log out"])])
 
 (defn <page/>
   ```

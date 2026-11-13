@@ -18,6 +18,8 @@ Format for entries is <version-string> - release date.
 - Thickets follow one another by public keys: a relay hands out the live
   slide to the keys it was given, and a recorder records what the relays it
   follows show, to be attended with notes and presented later.
+- Styled with daisyUI, Nord and Dim as the system asks, as Interstudy is,
+  slides included; an Avatar's door shows the presenter the same.
 
 ## 0.0.0 - 2024-10-26
 - Created this project.

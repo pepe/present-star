@@ -50,11 +50,11 @@
    (fn resume [guards]
      @[[:h1 "Welcome back"]
        [:h2 "Your presenter is still signed in."]
-       [:p [:button {:class "primary"
+       [:p [:button {:class "btn btn-primary"
                      :data-on:click (ds/get (sentry/place/url "/continue"))}
             "Continue"]
         " "
-        [:button {:data-on:click (ds/get (sentry/place/url "/logout"))}
+        [:button {:class "btn" :data-on:click (ds/get (sentry/place/url "/logout"))}
          "Sign out"]]])
    :unauthorized
    (fn unauthorized [guards home]
@@ -62,7 +62,7 @@
        [:h2 "Your session does not open the presenter."]
        [:p [:a {:href home} "Go to the entrance"]]])
    :failure
-   [:p {:class "error"} "That was not the password."]})
+   [:p {:class "alert alert-error" :role "alert"} "That was not the password."]})
 
 (def rpc-funcs
   "Sentry RPC functions."

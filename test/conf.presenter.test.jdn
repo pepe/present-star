@@ -1,7 +1,11 @@
 @{:address "http://localhost:8880"
   :cookie-host "localhost"
   :debug true
-  :door/css ["door.css" "slides.css"]
+  :door/css ["door.css"
+             "daisyui/daisyui-5.7.50.css"
+             "daisyui/themes-5.7.50.css"
+             "present-star.css"
+             "slides.css"]
   :entrance true
   :entry "presenter.janet"
   :guarded-by :presenter/sentry

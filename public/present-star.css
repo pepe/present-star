@@ -1,107 +1,100 @@
-/* present-star's own look: its palette, light and dark, and the page
-   around the presenter and the watcher. An Avatar's door wears door.css
-   instead; what the presenter needs to work is in slides.css. */
+/*
+  Present Star's own page, over daisyUI's parts and themes: the topbar,
+  the stage, messages, and the sentry's entrance. What the presenter and
+  the watcher need to work is in slides.css.
 
-:root {
-  --bg: #f4f3ef;
-  --fg: #1c1c1a;
-  --muted: #6a6964;
-  --line: #d9d7cf;
-  --panel: #ffffff;
-  --accent: #b8430f;
-  --accent-fg: #ffffff;
-  --slide-bg: #ffffff;
-  --slide-fg: #1c1c1a;
-  --code-bg: #1f2024;
-  --code-fg: #f1f0ea;
-  --error: #9f1c1c;
-  --error-bg: #fbe7e5;
-  --shadow: 0 1px 2px rgb(0 0 0 / 0.08), 0 4px 16px rgb(0 0 0 / 0.08);
-  color-scheme: light dark;
-  font-family:
-    system-ui,
-    -apple-system,
-    "Segoe UI",
-    Roboto,
-    sans-serif;
-}
+  Everything here is in the `present-star` layer, linked after daisyUI's,
+  so it has the final word over daisyUI's base and utilities by order
+  alone. Colours, radii and sizes come from the theme's variables, so both
+  themes -- Nord, and Dim when the system asks for dark -- follow without
+  a rule of their own.
 
-@media (prefers-color-scheme: dark) {
+  Through an Avatar's door this sheet is scoped to the door, and `:root`
+  and `body` are read as the door itself.
+*/
+@layer present-star {
+  /* daisyUI colours the root by this; a door, read as the root, with it. */
   :root {
-    --bg: #141413;
-    --fg: #ecebe5;
-    --muted: #9c9a92;
-    --line: #34332f;
-    --panel: #1d1d1b;
-    --accent: #f08a4b;
-    --accent-fg: #141413;
-    --slide-bg: #1d1d1b;
-    --slide-fg: #ecebe5;
-    --code-bg: #0c0c0b;
-    --error: #ffb4ab;
-    --error-bg: #3b1714;
+    --root-bg: var(--color-base-200);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   }
-}
 
-* {
-  box-sizing: border-box;
-}
+  /* The page: a topbar, then the stage. */
+  .topbar {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: .6rem 1rem;
+    background: var(--color-base-100);
+    border-bottom: 1px solid var(--color-base-300);
+  }
+  .topbar .brand {
+    font-weight: 800;
+    letter-spacing: .02em;
+  }
+  .topbar .title {
+    flex: 1;
+    opacity: .7;
+  }
+  main { padding: 1rem; }
 
-body {
-  margin: 0;
-  min-height: 100vh;
-  background: var(--bg);
-  color: var(--fg);
-}
+  /* Headings, which daisyUI's reset leaves at the text's size. Slides
+     size their own, see slides.css. */
+  :where(:root) h1 { font-size: 1.75rem; font-weight: 700; }
+  :where(:root) h2 { font-size: 1.25rem; font-weight: 700; }
+  :where(:root) h3 { font-weight: 650; }
+  :where(:root) a:where(:not(.btn, .tab)) {
+    color: var(--color-primary);
+    text-decoration: underline;
+    text-underline-offset: .15em;
+  }
 
-header {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 0.6rem 1rem;
-  border-bottom: 1px solid var(--line);
-}
+  .muted { opacity: .7; }
 
-header .brand {
-  font-weight: 800;
-  letter-spacing: 0.02em;
-}
-header .title {
-  flex: 1;
-  color: var(--muted);
-}
+  /* Messages: a coloured edge, readable in both themes. */
+  .alert { color: var(--color-base-content); }
+  .alert-error { border-inline-start: .25rem solid var(--color-error); }
 
-main {
-  padding: 1rem;
-}
-
-button {
-  font: inherit;
-  padding: 0.4rem 0.9rem;
-  border: 1px solid var(--line);
-  border-radius: 0.4rem;
-  background: var(--panel);
-  color: var(--fg);
-  cursor: pointer;
-}
-
-button:hover {
-  border-color: var(--accent);
-}
-button.primary {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: var(--accent-fg);
-}
-
-.muted {
-  color: var(--muted);
-}
-
-.error {
-  margin: 0;
-  padding: 0.5rem 0.75rem;
-  border-radius: 0.4rem;
-  background: var(--error-bg);
-  color: var(--error);
+  /* The sentry's entrance: one form, centred. The form is twm's own, so
+     it is styled by where it stands, with daisyUI's input and primary
+     button drawn from the theme. */
+  #entrance {
+    display: grid;
+    justify-items: center;
+    gap: 1rem;
+    padding: clamp(1rem, 6vw, 3rem) 1rem;
+    text-align: center;
+  }
+  #entrance h1 {
+    font-size: clamp(1.5rem, 5vw, 2.1rem);
+    font-weight: 730;
+    letter-spacing: -.04em;
+    line-height: 1.15;
+  }
+  #entrance h2 { font-weight: 500; }
+  #gate {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: .5rem;
+  }
+  #gate input {
+    width: min(20rem, 100%);
+    height: 2.5rem;
+    padding-inline: .75rem;
+    border: var(--border) solid color-mix(in oklab, var(--color-base-content) 20%, #0000);
+    border-radius: var(--radius-field);
+    background: var(--color-base-100);
+  }
+  #gate input:focus { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+  #gate button {
+    height: 2.5rem;
+    padding-inline: 1.25rem;
+    border-radius: var(--radius-field);
+    background: var(--color-primary);
+    color: var(--color-primary-content);
+    font-weight: 600;
+    cursor: pointer;
+  }
+  #gate button:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
 }

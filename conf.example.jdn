@@ -101,6 +101,11 @@
     :address "https://decks.pospisil.work"
     :static true
     :public "public"
+    # Where an Avatar shows the presenter in its door, the stylesheets it
+    # is styled with, scoped to the door: a reset first, then the same
+    # sheets the presenter's own page links.
+    :door/css ["door.css" "daisyui/daisyui-5.7.50.css" "daisyui/themes-5.7.50.css"
+               "present-star.css" "slides.css"]
     :neighbors [:watcher]}
    # The students' door: the short address, open to everyone.
    :watcher

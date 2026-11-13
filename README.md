@@ -11,6 +11,12 @@ Decks written in Markdown, presented at a URL, followed live.
 It is a Thicket grown with [TWM](https://git.sr.ht/~pepe/twm) on
 [gp](https://git.sr.ht/~pepe/gp).
 
+## Third-party
+
+The pages are styled with precompiled parts of [daisyUI](https://daisyui.com)
+5.7.50, MIT License, kept in `public/daisyui/` with its `LICENSE`, in its
+Nord theme, and Dim when the system asks for dark. Slides follow the theme.
+
 ## The thicket
 
 | Symbiont | Role | What it does |
@@ -146,7 +152,7 @@ janet bin/demiurge.janet
 
 raises the thicket and restarts it whenever a Janet source changes. The
 lecturer's door is on port 7880, the students' on 7881. Decks and the
-stylesheet are no sources: the decker rebuilds a deck the moment it is
+stylesheets are no sources: the decker rebuilds a deck the moment it is
 saved, and pages that show it update themselves.
 
 `janet bin/dm.janet state` asks the demiurge how it is; `run-peers`,

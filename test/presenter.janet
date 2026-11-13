@@ -175,7 +175,7 @@
 (assert (= 401 ((request "GET" (url "/attending")) :status))
         "The attending tab is the lecturer's alone")
 (let [resp (request "GET" (url "/attending") :headers cookie)]
-  (assert ((success-has? `>Stage</a>` `class="active"` `Nothing is attended` `function note(`)
+  (assert ((success-has? `>Stage</a>` `class="tab tab-active"` `Nothing is attended` `function note(`)
             resp)
           "and says when nothing is attended")
   (assert-not (string/find "function go(" (resp :body)) "It moves no stage"))
@@ -195,7 +195,7 @@
                                     `Notes` `data-ignore-morph`]))
   (assert shown "A lecture attended elsewhere shows on its recorded slide, with a note to write")
   (assert-not (string/find "Ctrl+←" shown) "whose keys move no deck of this lecturer's")
-  (def staged (sse/until live m [`href="/attending"` `class="badge">1</span>`
+  (def staged (sse/until live m [`href="/attending"` `class="badge badge-primary badge-sm">1</span>`
                                  `Nothing is on the stage`
                                  `recorded from elsewhere · 2 of 5 slides`]))
   (assert staged "The stage tab says one is attended, and lists its recording")
@@ -235,10 +235,12 @@
           "and the presenter's own page follows it, as the students would"))
 (let [css (request "GET" (url "/_door.css"))]
   (assert (string/has-prefix? "@scope (#door)" (string (css :body))) "The door's styles are the presenter's, scoped")
-  (assert (string/find "var(--muted-fg)" (string (css :body)))
-          "in the look of the Avatar's page, named after missing.css's colours")
-  (assert-not (string/find "#f4f3ef" (string (css :body)))
-              "never present-star's own palette"))
+  (assert (string/find "all: revert" (string (css :body)))
+          "with what the Avatar's page puts on the door taken back first")
+  (assert (string/find "--color-base-100" (string (css :body)))
+          "then daisyUI and its themes, as on the presenter's own page")
+  (assert-not (string/find "var(--muted-fg)" (string (css :body)))
+              "never the Avatar's missing.css colours"))
 (let [closed (request "GET" (url "/content?door=enter")
                       :headers {"Origin" origin "Authorization" "Bearer gone"})]
   (assert (string/find "The door closed" (string (closed :body)))

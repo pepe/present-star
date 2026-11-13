@@ -60,12 +60,12 @@
 (defn- <go/>
   "A button carrying one intent to the stage."
   [text & intent]
-  [:button (go/on ;intent)
+  [:button (merge {:class "btn btn-sm"} (go/on ;intent))
    text])
 
 (defn- <failure/>
   [{:file file :line line :message message}]
-  [:p {:class "error"}
+  [:p {:class "alert alert-error" :role "alert"}
    [:strong file (if line (. ":" line))] " " message])
 
 (defn- <note/>
@@ -83,7 +83,7 @@
   ```
   [id n text &opt slides]
   [:textarea (merge {:id (string "note-" (hash (string/join [id (string n) (or text "")] "\n")))
-                     :class "note"
+                     :class "textarea note"
                      :data-ignore-morph true
                      :data-deck id
                      :data-slide n
@@ -107,9 +107,10 @@
         [:p {:class "muted"} "Was on slide " (inc was)]
         [:p {:class "note-text"} text]
         [:div {:class "controls"}
-         [:button (note/on "click" {:deck id :orphan oid :slide n})
+         [:button (merge {:class "btn btn-sm"}
+                         (note/on "click" {:deck id :orphan oid :slide n}))
           "Put on this slide"]
-         [:button (note/on "click" {:deck id :orphan oid})
+         [:button (merge {:class "btn btn-sm"} (note/on "click" {:deck id :orphan oid}))
           "Forget"]]])]))
 
 (defn- <source/>
@@ -133,13 +134,20 @@
   The presenter's two tabs: the stage, and the lectures attended elsewhere.
   Each is an address of its own, so both may be open at once, side by
   side. Wherever it is seen from, the attending tab says how many are on.
+
+  They are links, not a tablist: each goes to a page of its own.
   ```
   [current attending]
-  [:nav {:class "tabs"}
-   [:a (door/link (tab/address "/") {:class (if (= current :stage) "active")}) "Stage"]
-   [:a (door/link (tab/address "/attending") {:class (if (= current :attending) "active")})
+  (defn tab [which]
+    (if (= current which)
+      {:class "tab tab-active" :aria-current "page"}
+      {:class "tab"}))
+  [:nav {:class "tabs tabs-border"}
+   [:a (door/link (tab/address "/") (tab :stage)) "Stage"]
+   [:a (door/link (tab/address "/attending") (tab :attending))
     "Attending"
-    (unless (empty? attending) [:span {:class "badge"} (length attending)])]])
+    (unless (empty? attending)
+      [:span {:class "badge badge-primary badge-sm"} (length attending)])]])
 
 (defn <attending/>
   ```
@@ -192,11 +200,11 @@
     [:div {:class "controls"}
      (<go/> "← Previous" "previous")
      (if shown
-       [:button (merge {:class "primary"} (go/on "next")) "Next →"]
+       [:button (merge {:class "btn btn-sm btn-primary"} (go/on "next")) "Next →"]
        (<go/> "Next →" "next"))
      (if shown
        (<go/> "Stop" "stop")
-       [:button (merge {:class "primary"} (go/on "present")) "Present"])
+       [:button (merge {:class "btn btn-sm btn-primary"} (go/on "present")) "Present"])
      (unless shown (<go/> "Close" "close"))]
     [:h3 "Next"]
     (if-let [upcoming (slide/at deck (inc n))]
@@ -372,7 +380,7 @@
   (<page/> "Presenter"
            [:main {:id "stage"}
             [:p "Your session is not valid. "
-             [:button {:class "primary" :data-on:click (ds/get "/logout")}
+             [:button {:class "btn btn-primary" :data-on:click (ds/get "/logout")}
               "Sign in again"]]]))
 
 (defn ^activity

@@ -53,7 +53,7 @@
   ["Live"
    @[[:div {:class "following" :data-init (ds/get "/content")} (<live/>)]
      [:p {:class "screen-control"}
-      [:button {:onclick "fullScreen()"} "Full screen"]]
+      [:button {:class "btn btn-sm btn-ghost" :onclick "fullScreen()"} "Full screen"]]
      ;<full-screen/>]
    nil
    "watching"])
