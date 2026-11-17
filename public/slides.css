@@ -38,7 +38,7 @@
     justify-content: center;
     gap: 2cqw;
     padding: 4.5cqw 6cqw;
-    font-size: 2.7cqw;
+    font-size: 2.1cqw;
     line-height: 1.35;
   }
 
@@ -46,15 +46,15 @@
     font-weight: 700;
   }
   .slide h1 {
-    font-size: 6cqw;
+    font-size: 5.2cqw;
     line-height: 1.1;
   }
   .slide h2 {
-    font-size: 4.4cqw;
+    font-size: 3.4cqw;
     line-height: 1.15;
   }
   .slide h3 {
-    font-size: 3.4cqw;
+    font-size: 2.4cqw;
   }
   .slide ul,
   .slide ol {
@@ -120,7 +120,8 @@
 
   .slide code {
     font-family:
-      ui-monospace, "Cascadia Code", "JetBrains Mono", Menlo, Consolas, monospace;
+      ui-monospace, "Cascadia Code", "JetBrains Mono", Menlo, Consolas,
+      monospace;
   }
 
   .slide :not(pre) > code {
