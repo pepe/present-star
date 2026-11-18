@@ -1,7 +1,7 @@
 title: Background and Problem
 author: Josef Pospíšil
 date: 2026-11-18
-version: 0.2
+version: 0.4
 ---
 
 # Generative Artificial Intelligence in the Software System Life Cycle
@@ -11,6 +11,8 @@ Telos · Ontos · Episteme · Praxis
 PhD research proposal · Advanced Academic Writing
 
 Ing. Josef Pospíšil
+
+Systems Engineering and Informatics, Department of Information Engineering
 
 Faculty of Economics and Management, Czech University of Life Sciences Prague
 
@@ -66,16 +68,6 @@ author: Josef Pospíšil
 date: 2026-11-18
 ---
 
-# Research question
-
-> Under what conditions can generative AI take part in the life cycle of a software system without assuming authority over its purpose, its truth, or its consequences?
-
-- **Discipline** — Information Systems
-- **Method** — Design Science Research (Hevner et al., 2004; Peffers et al., 2007)
-- **Structure** — four sub-questions, one by one…
-
----
-
 # Questions that kept returning
 
 The aim: a better methodology for developing resilient modular information systems
@@ -83,6 +75,16 @@ The aim: a better methodology for developing resilient modular information syste
 - What benefits do the mechanisms bring?
 - What are the lawful life cycle and boundaries inside such systems?
 - What authority should decide?
+
+---
+
+# Research question
+
+> Under what conditions can generative AI take part in the life cycle of a software system without assuming authority over its purpose, its truth, or its consequences?
+
+- **Discipline** — Information Systems
+- **Method** — Design Science Research
+- **Structure** — four sub-questions, one by one…
 
 ---
 
@@ -107,8 +109,11 @@ date: 2026-11-18
 
 **How must purpose be declared so that AI contributions remain answerable to it?**
 
+*Candidate literature:*
 
-Are AI contributions answerable to a named beneficiary?
+Ulrich (1983), *Critical Heuristics of Social Planning: A New Approach to Practical Philosophy*
+
+Autio et al. (2024), *Artificial Intelligence Risk Management Framework: Generative Artificial Intelligence Profile* (NIST AI 600-1)
 
 ---
 
@@ -118,7 +123,11 @@ Are AI contributions answerable to a named beneficiary?
 
 **Which structural boundaries keep AI contributions as proposals rather than authoritative changes?**
 
-Can an AI contribution ever become authoritative on its own?
+*Candidate literature:*
+
+Parnas (1972), "On the Criteria to Be Used in Decomposing Systems into Modules"
+
+Dhanorkar, Passi & Vorvoreanu (2025), "Human Oversight of Agentic Systems in Practice: Examining the Oversight Work, Challenges, and Heuristics of Developers Using Software Agents"
 
 ---
 
@@ -128,7 +137,11 @@ Can an AI contribution ever become authoritative on its own?
 
 **When is AI-produced knowledge sufficient grounds for a given consequence?**
 
-Did the AI have sufficient grounds for this consequence?
+*Candidate literature:*
+
+Toulmin (1958), *The Uses of Argument*
+
+Pearce et al. (2022), "Asleep at the Keyboard? Assessing the Security of GitHub Copilot's Code Contributions"
 
 ---
 
@@ -138,9 +151,11 @@ Did the AI have sufficient grounds for this consequence?
 
 **Can these conditions be embodied in practice and evaluated on real systems?**
 
-AI excels at poiēsis — making artefacts
+*Candidate literature:*
 
-If the life cycle is praxis, it needs phronēsis, practical judgement, which remains human
+Schön (1983), *The Reflective Practitioner: How Professionals Think in Action*
+
+Abbasi et al. (2024), "Pathways for Design Research on Artificial Intelligence"
 
 ===
 ---
@@ -155,7 +170,7 @@ date: 2026-11-18
 
 | Paper | Sources and data |
 |---|---|
-| Telos | Literature — Soft Systems Methodology, Critical Systems Heuristics, Theory W |
+| Telos | Literature; case studies |
 | Ontos | The artefact and its development records |
 | Episteme | Literature; records of AI contributions — accepted, rejected or revised, and on what grounds |
 | Praxis | Field research, started in the first year — case studies in real development |
@@ -175,6 +190,9 @@ Literature relevant for the development of the dissertation theme proposal.
 |Hevner et al. (2004) |  establishes Design Science Research in Information Systems as the method |
 |Peffers et al. (2007) | supplies the six DSR activities |
 |Gregor & Jones (2007) | explains how the four dissertation papers develop and evaluate one artefact, Thicket Methodology |
+
+Candidate literature closes each paper slide (Papers 1–4).
+The full list is still a proposal, kept in the sources log.
 
 ---
 
