@@ -5122,3 +5122,638 @@ On GitHub, open that branch and verify the commit.
 [Pro Git: Recording changes](https://git-scm.com/book/en/v2/Git-Basics-Recording-Changes-to-the-Repository)
 
 [GitHub: About remote repositories](https://docs.github.com/en/get-started/git-basics/about-remote-repositories)
+===
+title: Janet essentials and a two-state DFA
+author: Josef Pospíšil
+date: 2026-11-24
+---
+
+# Janet essentials and a two-state DFA
+
+EIEC4E / INFOAN1 · Theoretical Informatics
+
+24 November 2026 · Josef Pospíšil
+
+---
+# Today’s destination
+
+By the end, we will run a machine that decides whether a string contains an even number of `1`s.
+
+We’ll learn just enough Janet to write and explain that program.
+
+---
+# A familiar machine, a new tool
+
+We already know how to follow arrows by hand.
+
+In Janet, we can represent those arrows as data and look up the next state.
+
+---
+# Two ways to run Janet
+
+```sh
+janet
+janet parity.janet
+```
+
+The first opens the interactive prompt (REPL).
+
+The second runs a saved file. Try the first command now.
+
+---
+# A first expression
+
+```janet
+(+ 2 3)
+```
+
+Read it as: call `+` with arguments `2` and `3`.
+
+The REPL shows the resulting value: `5`.
+
+---
+# Function first
+
+```janet
+(+ 2 3)
+(* 2 3)
+```
+
+In a call, the function goes first. Spaces separate the pieces.
+
+---
+# A nested call 🧪
+
+```janet
+(+ 2 (* 3 4))
+```
+
+Which result becomes an argument to `+`?
+
+---
+# A nested call
+
+## contd.
+
+```janet
+(* 3 4)       # 12
+(+ 2 12)      # 14
+```
+
+The inner call supplies the second argument to `+`.
+
+---
+# Seeing a value in a script
+
+```janet
+(print (+ 2 3))  # displays 5
+```
+
+The REPL shows a result for you. A script can use `print` to display it.
+
+`#` starts a comment that runs to the end of the line.
+
+---
+# Numbers and strings
+
+```janet
+0
+"0"
+"01"
+```
+
+`0` is a number. With quotes, we have a string.
+
+`"01"` keeps the zero at the front because it is text.
+
+---
+# Are these equal? 🧪
+
+```janet
+(= 0 "0")
+```
+
+Predict before evaluating.
+
+---
+# Are these equal?
+
+## contd.
+
+```janet
+(= 0 "0")  # false
+```
+
+The values have different types. We’ll keep lookup keys and input values in the same representation.
+
+---
+# Naming a value
+
+```janet
+(def start :even)
+```
+
+`def` binds a name. Here, `start` refers to the keyword `:even`.
+
+---
+# Keywords as state labels
+
+```janet
+:even
+:odd
+```
+
+A keyword is a value we can use as a label.
+
+The labels name two possible states. They do not carry out any transitions.
+
+---
+# A binding that changes
+
+```janet
+(var state start)
+(set state :odd)
+(print state)
+```
+
+`var` creates a binding we can change. `set` changes its current value.
+
+---
+# Which value changed? 🧪
+
+```janet
+(def start :even)
+(var state start)
+(set state :odd)
+```
+
+What are `start` and `state` now?
+
+---
+# Which value changed?
+
+## contd.
+
+`start` is `:even`. `state` is `:odd`.
+
+Changing the current state leaves the start state available for the next run.
+
+---
+# A question that returns a Boolean
+
+```janet
+(= :even :even)  # true
+(= :odd :even)   # false
+```
+
+We can ask this exact question at the end of the DFA run.
+
+---
+# Choosing a result
+
+```janet
+(if (= state :even)
+  "accept"
+  "reject")
+```
+
+`if` evaluates the condition and selects one branch.
+
+---
+# Which branch runs? 🧪
+
+```janet
+(if (= :odd :even)
+  "accept"
+  "reject")
+```
+
+---
+# Which branch runs?
+
+## contd.
+
+This evaluates to `"reject"`. The equality is `false`.
+
+---
+# Naming a function
+
+```janet
+(defn is-even-state? [state]
+  (= state :even))
+```
+
+`defn` defines a function. The brackets name its parameters.
+
+Here the last expression supplies the return value.
+
+---
+# Calling our function
+
+```janet
+(is-even-state? :even)  # true
+(is-even-state? :odd)   # false
+```
+
+The argument becomes the local `state` for that call.
+
+---
+# A small dictionary
+
+```janet
+(def sample-row {48 :even 49 :odd})
+```
+
+The braces group key–value pairs. This immutable dictionary describes one row of the machine.
+
+---
+# One lookup 🧪
+
+```janet
+(get sample-row 49)
+```
+
+Which value belongs to key `49`?
+
+---
+# One lookup
+
+## contd.
+
+```janet
+(get sample-row 49)  # :odd
+```
+
+A lookup returns the value associated with the key.
+
+---
+# A missing key
+
+```janet
+(get sample-row 50)  # nil
+```
+
+`nil` means the lookup found no entry here.
+
+Later, we’ll use it to catch input outside the alphabet.
+
+---
+# Reading the input one item at a time
+
+```janet
+(each byte "01"
+  (print byte))
+```
+
+`each` runs the body once for every byte in the string.
+
+---
+# What does the loop print? 🧪
+
+```janet
+(each byte "01" (print byte))
+```
+
+Two values, in order. What are they?
+
+---
+# What does the loop print?
+
+## contd.
+
+```text
+48
+49
+```
+
+Janet iterates over string bytes. ASCII `0` is byte `48`; ASCII `1` is byte `49`.
+
+---
+# What does an empty loop do? 🧪
+
+```janet
+(each byte "" (print byte))
+```
+
+---
+# What does an empty loop do?
+
+## contd.
+
+It prints nothing. The body runs zero times.
+
+A machine that starts in `:even` therefore stays there on empty input.
+
+---
+# The physical machines
+
+Put state cards on the floor. Read one symbol at a time.
+
+First: words ending in `01`. Second: words with an even number of `1`s.
+
+Josef demonstrates first. A student takes over.
+
+---
+# Ends in 01: when do we decide? 🧪
+
+Walk `010` with the three-state suffix machine.
+
+Does reaching the accepting state after `01` settle the answer?
+
+---
+# Ends in 01: when do we decide?
+
+## contd.
+
+No. For `010`, the states are: no useful suffix → trailing `0` → trailing `01` → trailing `0`.
+
+The final state is not accepting.
+
+---
+# Even number of 1s
+
+The two cards say **even** and **odd**.
+
+On `0`, stay where you are. On `1`, move to the other card.
+
+Start on **even** because no symbols have been read.
+
+---
+# Trace 101 on the floor 🧪
+
+Say the state before reading the word and after each of its three symbols.
+
+Does the machine accept?
+
+---
+# Trace 101 on the floor
+
+## contd.
+
+Even → odd → odd → even.
+
+It accepts after the last `1`. The `0` did not change parity.
+
+---
+# A state summarises the prefix
+
+After each step, `:even` means we have seen an even number of `1`s so far.
+
+`:odd` means we have seen an odd number.
+
+That is all the information we need for the next step.
+
+---
+# The parity transition table
+
+| Current state | Read `0` | Read `1` |
+|---|---|---|
+| `:even` | `:even` | `:odd` |
+| `:odd` | `:odd` | `:even` |
+
+Start: `:even`. Accepting set: `{even}`.
+
+---
+# Why do we need two states? 🧪
+
+Could we recognise the same language with only one state?
+
+Compare the empty word `ε` with the word `1`.
+
+---
+# Why do we need two states?
+
+## contd.
+
+The empty word accepts and `1` rejects.
+
+With only one state, both inputs end in that same state and must receive the same decision. Two states are necessary here.
+
+---
+# The five parts of this DFA
+
+**States:** even and odd. **Alphabet:** Σ = {0, 1}.
+
+**Start:** even. **Accepting set:** F = {even}.
+
+**Transition function:** δ(state, symbol) is the entry in the table.
+
+---
+# The table as Janet data
+
+```janet
+(def start :even)
+(def transitions
+  {:even {48 :even 49 :odd}
+   :odd  {48 :odd  49 :even}})
+```
+
+The outer keys name the states. Each row maps the two input bytes to their destination states.
+
+---
+# The lookup in two expressions
+
+```janet
+(def row (get transitions :even))
+(get row 49)  # :odd
+```
+
+First choose the row, then choose the column.
+
+---
+# Read a different cell 🧪
+
+```janet
+(get (get transitions :odd) 48)
+```
+
+Which row and column does this read?
+
+---
+# Read a different cell
+
+## contd.
+
+The `:odd` row and the `48` column, corresponding to `0`.
+
+The result is `:odd`; a zero preserves parity.
+
+---
+# A valid rejection and invalid input
+
+`"1"` is a valid word over Σ. Its final state is odd, so the DFA rejects it.
+
+`"10x"` is outside Σ*. The program reports an error instead of pretending it is a binary word.
+
+---
+# One step in Janet
+
+```janet
+(defn step [state byte]
+  (def next-state (get (get transitions state) byte))
+  (if (= next-state nil)
+    (error "Expected 0 or 1")
+    next-state))
+```
+
+This reads one table cell. The only extra check is whether that cell is missing.
+
+---
+# Reading the whole word
+
+```janet
+(defn final-state [input]
+  (var state start)
+  (each byte input
+    (set state (step state byte)))
+  state)
+```
+
+Start anew for each call, apply one transition per byte, and return the last state.
+
+---
+# Where should acceptance be checked? 🧪
+
+Imagine checking immediately after the first `0` in `"01"`.
+
+What answer would we give too soon?
+
+---
+# Where should acceptance be checked?
+
+## contd.
+
+We are still even after `0`, but the remaining `1` makes us odd.
+
+`"01"` rejects under the parity rule. Check acceptance only after all bytes have been read.
+
+---
+# The acceptance function
+
+```janet
+(defn accepts? [input]
+  (= (final-state input) :even))
+```
+
+The table describes the moves. The runner finds the final state. The acceptance test checks that state.
+
+---
+# Empty and one-symbol words 🧪
+
+Predict `accepts?` for `""`, `"0"` and `"1"`.
+
+Give a reason for each result.
+
+---
+# Empty and one-symbol words
+
+## contd.
+
+`""` → `true`: no move, so the machine stays even.
+
+`"0"` → `true`: zero preserves even parity.
+
+`"1"` → `false`: one move takes us to odd.
+
+---
+# One more 1 🧪
+
+Predict `accepts?` for `"101"` and `"1011"`.
+
+What happens on the final additional bit?
+
+---
+# One more 1
+
+## contd.
+
+`"101"` → `true`; the final state is even.
+
+`"1011"` → `false`; the additional `1` flips it to odd.
+
+---
+# A character outside the alphabet 🧪
+
+What happens if we call `(accepts? "10x")`?
+
+Which part of the code notices the problem?
+
+---
+# A character outside the alphabet
+
+## contd.
+
+The machine reaches `:odd` after `10`. The row has no key for the byte of `x`.
+
+`step` sees `nil` and raises `Expected 0 or 1`.
+
+---
+# Complete program: data and one transition
+
+```janet
+(def start :even)
+(def transitions
+  {:even {48 :even 49 :odd}
+   :odd  {48 :odd  49 :even}})
+
+(defn step [state byte]
+  (def next-state (get (get transitions state) byte))
+  (if (= next-state nil)
+    (error "Expected 0 or 1")
+    next-state))
+```
+
+---
+# Complete program: run and accept
+
+Save both complete-program slides in order in `parity.janet`, then run `janet parity.janet`.
+
+```janet
+(defn final-state [input]
+  (var state start)
+  (each byte input
+    (set state (step state byte)))
+  state)
+
+(defn accepts? [input]
+  (= (final-state input) :even))
+
+(print (accepts? ""))
+(print (accepts? "101"))
+(print (accepts? "1011"))
+```
+
+---
+# Live run
+
+```sh
+janet parity.janet
+```
+
+Expected output, one value per line:
+
+```text
+true
+true
+false
+```
+
+---
+# Where are the five DFA parts in the program? 🧪
+
+Point to the states, alphabet, start state, accepting set and transition function in the complete program.
+
+---
+# Where are the five DFA parts in the program?
+
+## contd.
+
+The outer keys name the states. The row keys encode the alphabet. `start` sets the initial state. `accepts?` checks the only accepting state, `:even`. `transitions` and `step` implement δ.
+
+---
+# References
+
+[Janet: Bindings](https://janet-lang.org/docs/bindings.html) · [Functions](https://janet-lang.org/docs/functions.html)
+
+[Data structures](https://janet-lang.org/docs/data_structures/index.html) · [Strings](https://janet-lang.org/docs/strings.html) · [Looping](https://janet-lang.org/docs/loop.html)
+
