@@ -11,3 +11,4 @@ https://git.sr.ht/~pepe/tots/tree/governance-3/item/ledger.md
 | ID | Date | Decision | Decided by | Grounds / source | Status | Where |
 |---|---|---|---|---|---|---|
 | D-001 | 2026-11-25 | Present Star is governed under tots (https://git.sr.ht/~pepe/tots): its `AGENTS.md` and its ledger apply here at the tag named in `AGENTS.md`, now `governance-3` | Josef | `briefs/2026-11-25-governance.md` | accepted | `AGENTS.md` |
+| D-002 | 2026-11-25 | The pin moves to tots' tag `governance-4`, which brings in tots D-052 (a thicket comes under tots with its `TELOS.md`, which the keeper writes) | Josef | conversation with Claude, 2026-11-25; tots D-052 | accepted | `AGENTS.md` |

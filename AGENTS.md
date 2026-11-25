@@ -1,7 +1,7 @@
 # Working rules for AI participants
 
-Present Star is governed under tots (D-001). The rules of tots' `AGENTS.md` at the tag `governance-3` apply here:
-`git -C ~/code/tots show governance-3:AGENTS.md`, or https://git.sr.ht/~pepe/tots/tree/governance-3/item/AGENTS.md.
+Present Star is governed under tots (D-001). The rules of tots' `AGENTS.md` at the tag `governance-4` apply here:
+`git -C ~/code/tots show governance-4:AGENTS.md`, or https://git.sr.ht/~pepe/tots/tree/governance-4/item/AGENTS.md.
 This file adds to them and never loosens them. If the two seem to conflict, ask the keeper.
 Claude Code reads this file through `CLAUDE.md`.
 
