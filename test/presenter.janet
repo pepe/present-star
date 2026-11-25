@@ -92,7 +92,12 @@
   (assert-not (string/find "draft.md" sent) "The other decks are put away meanwhile")
   (assert (string/find "Ctrl+← and Ctrl+→ move through the deck" sent)
           "The note says how to move on from it")
-  (assert (string/find `data-slide="0"` sent) "and knows its slide"))
+  (assert (string/find `data-slide="0"` sent) "and knows its slide")
+  (assert (and (= 1 (length (string/find-all `class="half previous"` sent)))
+               (= 1 (length (string/find-all `class="half next"` sent))))
+          "The slide on the stage is clicked through its two halves, the next one is not")
+  (assert (= 2 (length (string/find-all `onclick="go(&quot;next&quot;)"` sent)))
+          "and the next half moves on, as the button does"))
 (assert (deep= {:presentation "intro" :slide 0 :presenting false} (:stage tree))
         "The tree decided it, and shows the students nothing yet")
 
@@ -195,6 +200,7 @@
                                     `Notes` `data-ignore-morph`]))
   (assert shown "A lecture attended elsewhere shows on its recorded slide, with a note to write")
   (assert-not (string/find "Ctrl+←" shown) "whose keys move no deck of this lecturer's")
+  (assert-not (string/find `class="half` shown) "and whose slide takes no click")
   (def staged (sse/until live m [`href="/attending"` `class="badge badge-primary badge-sm">1</span>`
                                  `Nothing is on the stage`
                                  `recorded from elsewhere · 2 of 5 slides`]))
@@ -233,6 +239,11 @@
   (assert (= 204 (moved :status)) "A move made through the door, with the bearer, is accepted")
   (assert (sse/until live m [`class="on-stage lectern"`])
           "and the presenter's own page follows it, as the students would"))
+(let [body (string ((request "GET" (url "/content?door=enter") :headers through) :body))]
+  (assert (and (string/find `class="half previous"` body)
+               (= 2 (length (string/find-all `data-on:click="psGo($_bearer,&quot;next&quot;)"` body))))
+          "In the door, the stage's slide is clicked through its halves too")
+  (assert-not (string/find "onclick=" body) "never through the presenter's own page"))
 (let [css (request "GET" (url "/_door.css"))]
   (assert (string/has-prefix? "@scope (#door)" (string (css :body))) "The door's styles are the presenter's, scoped")
   (assert (string/find "all: revert" (string (css :body)))

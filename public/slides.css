@@ -160,6 +160,27 @@
   .on-stage.lectern {
     grid-template-columns: minmax(0, 5fr) minmax(16rem, 3fr);
   }
+  /* The stage's slide is clicked through two halves over it: the left one
+     goes back, the right one on. */
+  .on-stage.lectern > .slide {
+    position: relative;
+  }
+  .slide > .half {
+    position: absolute;
+    top: 0;
+    width: 50%;
+    height: 100%;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+  }
+  .slide > .half.previous {
+    left: 0;
+  }
+  .slide > .half.next {
+    right: 0;
+  }
   .lectern textarea.note {
     aspect-ratio: 16 / 9;
     font-size: 1.5rem;

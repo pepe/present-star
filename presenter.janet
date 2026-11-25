@@ -63,6 +63,16 @@
   [:button (merge {:class "btn btn-sm"} (go/on ;intent))
    text])
 
+(defn- <half/>
+  ```
+  One half of the stage's slide, carrying `move` when clicked: the
+  lecturer at the projector clicks the slide, not the buttons beside it.
+  The keys move the deck already, so a half is not in the Tab order.
+  ```
+  [move text]
+  [:button (merge {:class (. "half " move) :aria-label text :tabindex "-1"}
+                  (go/on move))])
+
 (defn- <failure/>
   [{:file file :line line :message message}]
   [:p {:class "alert alert-error" :role "alert"}
@@ -187,7 +197,9 @@
   (def part (or (section/at deck n) {}))
   (def parted (> (length (get deck :sections [])) 1))
   [:div {:class "on-stage lectern"}
-   (<slide/> (slide/at deck n))
+   [;(<slide/> (slide/at deck n))
+    (<half/> "previous" "Previous")
+    (<half/> "next" "Next")]
    [:aside {:class "side"}
     (<note/> id n (get-in held [:slides n]) total)
     (if shown
