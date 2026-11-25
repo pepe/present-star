@@ -31,3 +31,10 @@ Judge "done" by that: an agent starting here is led to tots' rules, Present Star
 - Change nothing but these four files. `TELOS.md` is the keeper's to write.
 - Nothing on the box; no push unless the keeper asks.
 - The commit carries `Brief: briefs/2026-11-25-governance.md`, `Drafted-by:` with the model and version, and `Refs: D-001`.
+
+## Note, 2026-11-25: the planner's review, answered by the analyst
+
+1. `TELOS.md` does not exist yet. `AGENTS.md` names it anyway; the missing link is accepted for now. This work is done when the four files are in; the keeper's `TELOS.md` completes the Telos above, before or after the merge, as he chooses.
+2. The test line reads: run the tests as `README.md` "Tests" says, with `JANET_PATH` set to this repository's `dev`. Confirm it by running the suite that way, as part of the verification.
+3. "Before anything" item 2 reads: `HANDOVER.md` (not in Git, kept on the laptop): its newest sections; `DEPLOY.md` before anything on the box.
+4. In `ledger.md`, the header's example link and D-001 both name `governance-3`. Nothing of Metabolon's `governance-2` or `governance-start` is copied.
