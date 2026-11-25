@@ -39,3 +39,9 @@ Judge "done" by that: on the stage tab, a click on the right half of the current
 - Never change business code to make a test pass.
 - Nothing on the box; no push unless the keeper asks.
 - Commits carry `Brief: briefs/2026-11-25-click-slide-moves.md` and `Drafted-by:` with the model and version.
+
+## Note, 2026-11-25: the keeper's answers to the planner
+
+- The click is taken by two elements, each over one half of the stage's slide, instead of by measuring where the click fell.
+- So nothing inside the stage's slide takes a click of its own: a link there does not open, and its text cannot be selected. This replaces the analyst's proposal, under "To find out before the plan", that links and selections do not move the deck. The previews, the attending tab and the watcher keep their slides as they are.
+- The test also shows that the attending tab's slide takes no click.
