@@ -80,12 +80,8 @@
     :address "http://localhost:8880"
     :static true
     :public "public"
-    # An Avatar of a Locker may show the presenter in its door.
+    # An Avatar of a Locker may open the presenter in a window of its own.
     :origins ["http://pepe.locker.localhost:8790"]
-    # The stylesheets an Avatar's door is styled with, scoped to the door:
-    # a reset first, then the same sheets the presenter's own page links.
-    :door/css ["door.css" "daisyui/daisyui-5.7.50.css" "daisyui/themes-5.7.50.css"
-               "present-star.css" "slides.css"]
     :neighbors [:watcher]}
    :watcher
    {:http "localhost:8881"

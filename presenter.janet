@@ -1,6 +1,5 @@
 (use /environment /schema)
 (import twm/symbiont :as symbiont)
-(import twm/door :prefix "")
 (import twm/sentry
         :only [session/check-with /logout StandDown] :prefix "")
 
@@ -33,29 +32,19 @@
 
 (defn- go/on
   ```
-  The attribute carrying one `intent` to the stage when clicked: `go`,
-  on the presenter's own page. In an Avatar's door the page is the
-  Avatar's, so the click is Datastar's, and carries the session the door
-  gave as the bearer; see `<door/controls/>`.
+  The attribute carrying one `intent` to the stage when clicked: `go`.
   ```
   [& intent]
-  (def args (string/join (map json/encode intent) ","))
-  (if (dyn :door/address)
-    {:data-on:click (string "psGo($_bearer," args ")")}
-    {:onclick (string "go(" args ")")}))
+  {:onclick (string "go(" (string/join (map json/encode intent) ",") ")")})
 
 (defn- note/on
   ```
   The attribute `event` carrying a change of the notes, `intent`, with
-  the text the element holds when `text?`: `note` on the presenter's own
-  page, and Datastar's with the bearer in an Avatar's door.
+  the text the element holds when `text?`: `note`.
   ```
   [event intent &opt text?]
-  (if (dyn :door/address)
-    {(keyword "data-on:" event)
-     (string "psNote($_bearer," (json/encode intent) (if text? ", el.value" "") ")")}
-    {(keyword "on" event)
-     (string "note(" (json/encode intent) (if text? ", this.value" "") ")")}))
+  {(keyword "on" event)
+   (string "note(" (json/encode intent) (if text? ", this.value" "") ")")})
 
 (defn- <go/>
   "A button carrying one intent to the stage."
@@ -129,16 +118,6 @@
   (def {:at at :count total} (deck :recorded))
   (. "slide " (inc (at n)) " of " total))
 
-(defn- tab/address
-  ```
-  Where a tab is: its path, on the presenter's own page, where the path
-  is all a link needs; in full in an Avatar's door, see `door/link`.
-  ```
-  [path]
-  (if-let [address (dyn :door/address)]
-    (string (door/base address) path)
-    path))
-
 (defn- <tabs/>
   ```
   The presenter's two tabs: the stage, and the lectures attended elsewhere.
@@ -153,8 +132,8 @@
       {:class "tab tab-active" :aria-current "page"}
       {:class "tab"}))
   [:nav {:class "tabs tabs-border"}
-   [:a (door/link (tab/address "/") (tab :stage)) "Stage"]
-   [:a (door/link (tab/address "/attending") (tab :attending))
+   [:a (merge {:href "/"} (tab :stage)) "Stage"]
+   [:a (merge {:href "/attending"} (tab :attending))
     "Attending"
     (unless (empty? attending)
       [:span {:class "badge badge-primary badge-sm"} (length attending)])]])
@@ -436,101 +415,32 @@
      <notes/script/>]
    :logout])
 
-(defn- <door/controls/>
-  ```
-  What an Avatar's door holds of the stage tab's scripts, for the page
-  that holds the door is the Avatar's. They are defined as the stage
-  arrives, against this presenter's `address` and with the bearer the door
-  gave, and the keys are read by an element of the stage, so they go when
-  the door does: a deck in another door does not move with these keys.
-  ```
-  [address]
-  (def base (door/base address))
-  (string
-    "window.psPost = (bearer, path, body) => fetch('" base "' + path, {method: 'POST', "
-    "headers: {'Content-Type': 'application/json', Authorization: 'Bearer ' + bearer}, "
-    "body: JSON.stringify(body)}); "
-    "window.psGo = (bearer, move, deck, slide) => psPost(bearer, '/go', {move: move, deck: deck, slide: slide}); "
-    "window.psNote = (bearer, intent, text) => { if (text !== undefined) intent.text = text; "
-    "psPost(bearer, '/note', intent); }; "
-    "window.psKey = (bearer, e) => { "
-    "if (!document.querySelector('#door #podium')) return; "
-    "const arrow = {ArrowRight: 'next', ArrowLeft: 'previous'}[e.key]; "
-    "if (arrow && e.ctrlKey && !e.altKey && !e.metaKey && !e.shiftKey) { "
-    "e.preventDefault(); const t = e.target.closest && e.target.closest('textarea.note'); "
-    "if (t) { const n = Number(t.dataset.slide); "
-    "if (arrow === 'next' ? n + 1 >= Number(t.dataset.slides) : n === 0) return; t.blur(); } "
-    "psGo(bearer, arrow); return; } "
-    "if (e.target.closest('input, textarea, select') || e.altKey || e.ctrlKey || e.metaKey) return; "
-    "if (['ArrowRight', 'PageDown', ' '].includes(e.key)) { e.preventDefault(); psGo(bearer, 'next'); } "
-    "else if (['ArrowLeft', 'PageUp'].includes(e.key)) { e.preventDefault(); psGo(bearer, 'previous'); } };"))
-
-(defn- <door/stage/>
-  ```
-  A tab as an Avatar's door shows it, answering `/content?door=enter`:
-  the presenter's door-scoped styles, its scripts, `content` under the
-  element asking for the tab's live stream at `path`, and, on the stage
-  tab, the element reading the keys.
-  ```
-  [address path content &opt keys?]
-  [:div {:id "door" :class "container present-star" :data-init (<door/controls/> address)}
-   (door/<stylesheet/> address)
-   [:div {:data-init (ds/get path)} content]
-   (if keys? [:div {:data-on:keydown__window "psKey($_bearer, evt)"}])])
-
 (defn- live
   ```
   A tab's one live stream, rendering `render` once, and again every time
   the tree says anything the presenter follows changed. A presenter going
-  away takes the tab back to the door -- or, in an Avatar's door, closes
-  the door and leaves the Avatar's page where it is.
-
-  In an Avatar's door, a slide's own root-relative images and links name
-  this presenter in full: the page asking is the Avatar's.
+  away takes the tab back to the door.
   ```
   [view render]
-  (def address (dyn :door/address))
-  (defn patch []
-    (if address
-      (ds/patch-elements (door/absolute (hg/html (render)) address))
-      (ds/hg/patch (render))))
+  (defn patch [] (ds/hg/patch (render)))
   (view/stream
     view [;followed stage/stand-down]
     patch
     (fn [_] (patch))
     (fn []
       (protect
-        (:write (dyn :sse-conn)
-                (if address (door/msg/closed) (view :transition/logout)))
+        (:write (dyn :sse-conn) (view :transition/logout))
         (:flush (dyn :sse-conn))))))
-
-(defn- entering?
-  "Whether `req` asks for a tab as an Avatar's door shows it, see `<door/stage/>`."
-  [req]
-  (and (dyn :door/address)
-       (string/find "door=enter" (or (req :query-string) ""))))
 
 (defh /content
   "The stage tab's live stream, of the podium."
   [session/admitted]
-  (if (entering? req)
-    (let [address (dyn :door/address)]
-      (http/stream
-        (ds/patch-elements
-          (door/absolute (hg/html (<door/stage/> address "/content" (<podium/>) true)) address)
-          "#door" "outer")))
-    (live view <podium/>)))
+  (live view <podium/>))
 
 (defh /attending/content
   "The attending tab's live stream, of the lectures attended."
   [session/admitted]
-  (if (entering? req)
-    (let [address (dyn :door/address)]
-      (http/stream
-        (ds/patch-elements
-          (door/absolute (hg/html (<door/stage/> address "/attending/content" (<attended/>))) address)
-          "#door" "outer")))
-    (live view <attended/>)))
+  (live view <attended/>))
 
 (defn move/of
   "The move the lecturer's `intent`, as `/go` receives it, asks for, or nil."
