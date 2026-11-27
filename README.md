@@ -142,6 +142,9 @@ janet-pm install https://git.sr.ht/~pepe/gp
 janet-pm install https://git.sr.ht/~pepe/twm
 ```
 
+Present Star needs twm at `a1181a3` or later: from there a Locker opens
+the presenter in a window of its own.
+
 Copy `conf.example.jdn` to `conf.jdn`, point its addresses at `localhost`,
 set `:builder false` and `:sources "presentations"`, and give it secrets of
 its own (below). Then
